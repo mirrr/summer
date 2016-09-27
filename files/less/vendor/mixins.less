@@ -1,0 +1,163 @@
+.text-shadow (@string: 0 1px 3px rgba(0, 0, 0, 0.25)) {
+	text-shadow: @string;
+}
+
+.box-shadow (@string) {
+	-webkit-box-shadow: @string;
+	-moz-box-shadow: @string;
+	box-shadow: @string;
+}
+
+.box-shadow (@arg, @arg2) {
+	-webkit-box-shadow: @arg, @arg2;
+	-moz-box-shadow: @arg, @arg2;
+	box-shadow: @arg, @arg2;
+}
+
+.drop-shadow (@x: 0, @y: 1px, @blur: 2px, @spread: 0, @alpha: 0.25) {
+	-webkit-box-shadow: @x @y @blur @spread rgba(0, 0, 0, @alpha);
+	-moz-box-shadow: @x @y @blur @spread rgba(0, 0, 0, @alpha);
+	box-shadow: @x @y @blur @spread rgba(0, 0, 0, @alpha);
+}
+
+.inner-shadow (@x: 0, @y: 1px, @blur: 2px, @spread: 0, @alpha: 0.25) {
+	-webkit-box-shadow: inset @x @y @blur @spread rgba(0, 0, 0, @alpha);
+	-moz-box-shadow: inset @x @y @blur @spread rgba(0, 0, 0, @alpha);
+	box-shadow: inset @x @y @blur @spread rgba(0, 0, 0, @alpha);
+}
+
+.box-sizing (@type: border-box) {
+	-webkit-box-sizing: @type;
+	-moz-box-sizing: @type;
+	box-sizing: @type;
+}
+
+.filter (@string) {
+	-webkit-filter: @string;
+	-moz-filter: @string;
+	-o-filter: @string;
+	-ms-filter: @string;
+	filter: @string;
+}
+
+.blur (@blur: 5px) {
+	.filter(blur(@blur));
+}
+
+.border-radius (@radius: 5px) {
+	-webkit-border-radius: @radius;
+	-moz-border-radius: @radius;
+	border-radius: @radius;
+	-moz-background-clip: padding;
+	-webkit-background-clip: padding-box;
+	background-clip: padding-box;
+}
+
+.opacity (@opacity: 0.5) {
+	-webkit-opacity: @opacity;
+	-moz-opacity: @opacity;
+	opacity: @opacity;
+}
+
+.gradient (@startColor: #eee, @endColor: white) {
+	background-color: @startColor;
+	background-image: -webkit-gradient(linear, left top, left bottom, from(@startColor), to(@endColor));
+	background-image: -webkit-linear-gradient(top, @startColor, @endColor);
+	background-image: -moz-linear-gradient(top, @startColor, @endColor);
+	background-image: -ms-linear-gradient(top, @startColor, @endColor);
+	background-image: -o-linear-gradient(top, @startColor, @endColor);
+}
+
+.horizontal-gradient (@startColor: #eee, @endColor: white) {
+	background-color: @startColor;
+	background-image: -webkit-gradient(linear, left top, right top, from(@startColor), to(@endColor));
+	background-image: -webkit-linear-gradient(left, @startColor, @endColor);
+	background-image: -moz-linear-gradient(left, @startColor, @endColor);
+	background-image: -ms-linear-gradient(left, @startColor, @endColor);
+	background-image: -o-linear-gradient(left, @startColor, @endColor);
+}
+
+.animation (@name, @duration: 300ms, @delay: 0, @ease: ease) {
+	-webkit-animation: @name @duration @delay @ease;
+	-moz-animation: @name @duration @delay @ease;
+	-ms-animation: @name @duration @delay @ease;
+	animation: @name @duration @delay @ease;
+}
+
+.transition (@transition) {
+	-webkit-transition: @transition;
+	-moz-transition: @transition;
+	-ms-transition: @transition;
+	-o-transition: @transition;
+	transition: @transition;
+}
+
+.transform(@string) {
+	-webkit-transform: @string;
+	-moz-transform: @string;
+	-ms-transform: @string;
+	-o-transform: @string;
+	transform: @string;
+}
+
+.scale (@factor) {
+	.transform(scale(@factor));
+}
+
+.rotate (@deg) {
+	.transform(rotate(@deg));
+}
+
+.skew (@deg, @deg2) {
+	.transform(skew(@deg, @deg2));
+}
+
+.translate (@x, @y: 0) {
+	.transform(translate(@x, @y));
+}
+
+.translate3d (@x, @y: 0, @z: 0) {
+	.transform(translate3d(@x, @y, @z));
+}
+
+.perspective (@value: 1000) {
+	-webkit-perspective: @value;
+	-moz-perspective: @value;
+	-ms-perspective: @value;
+	perspective: @value;
+}
+
+.transform-origin (@x: center, @y: center) {
+	-webkit-transform-origin: @x @y;
+	-moz-transform-origin: @x @y;
+	-ms-transform-origin: @x @y;
+	-o-transform-origin: @x @y;
+	transform-origin: @x @y;
+}
+
+.user-select (@val) {
+	-webkit-touch-callout: @val;
+	-webkit-user-select: @val;
+	-khtml-user-select: @val;
+	-moz-user-select: @val;
+	-ms-user-select: @val;
+	user-select: @val;
+}
+
+.flexbox () {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -ms-flexbox;
+	display: box;
+	display: flexbox;
+	display: flex;
+
+	-webkit-flex-wrap: wrap;
+	flex-wrap: wrap;
+
+	-webkit-flex-direction: row;
+	flex-direction: row;
+
+	-webkit-justify-content: space-between;
+	justify-content: space-between;
+}

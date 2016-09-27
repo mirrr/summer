@@ -1,0 +1,102 @@
+{{ define "header" }}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="HandheldFriendly" content="true"/>
+		<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=0.8, user-scalable=no">
+		<meta name="theme-color" content="#354463">
+		<link rel="shortcut icon" href="{{var "panelPath"}}/files/favicon.ico">
+		<link rel="icon" sizes="192x192" href="{{var "panelPath"}}/files/favicon192x192.png">
+		<title>{{.title}} GoAdmin</title>
+		<link rel="stylesheet" href="{{var "panelPath"}}/files/build/style.css">
+		<script type="text/javascript"> window.panelBasePath="{{.panelPath}}";</script>
+		<script type="text/javascript" src="{{var "panelPath"}}/files/build/main.js"></script>
+	</head>
+
+	<body>
+		<div id="all">
+			<div class="navbar navbar-default navbar-static-top" role="navigation">
+				<a name="top"></a>
+				<div class="container">
+					<div class="navbar-header">
+						<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+							<span class="sr-only">Видимость меню</span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</button>
+						<a class="navbar-brand" href="{{.panelPath}}"><span class="fa fa-books"> </span> </a>
+					</div>
+					<div class="navbar-collapse collapse">
+						<ul class="nav navbar-nav">
+							<li class="{{if .active.operations}}active{{end}}">
+								<a href="{{.panelPath}}/operations">Операции</a>
+							</li>
+							<li class="dropdown {{if or .active.users .active.clauses .active.accounts .active.currency .active.offices .active.projects}}active{{end}}">
+								<a class="dropdown-toggle" data-toggle="dropdown">Списки <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li class="{{if .active.clauses}}active{{end}}"><a href="{{.panelPath}}/clauses"><span class="fa fa-briefcase"></span> Статьи операций</a></li>
+									<li class="{{if .active.accounts}}active{{end}}"><a href="{{.panelPath}}/accounts"><span class="fa fa-stack"></span> Счета</a></li>
+									<li class="{{if .active.currency}}active{{end}}"><a href="{{.panelPath}}/currency"><span class="fa fa-ruble"></span> Валюта</a></li>
+									<li class="{{if .active.offices}}active{{end}}"><a href="{{.panelPath}}/offices"><span class="fa fa-office"></span> Офисы</a></li>
+									<li class="{{if .active.projects}}active{{end}}"><a href="{{.panelPath}}/projects"><span class="fa fa-slideshare"></span> Проекты</a></li>
+									<li class="{{if .active.users}}active{{end}}"><a href="{{.panelPath}}/users"><span class="fa fa-users"></span> База сотрудников</a></li>
+								</ul>
+							</li>
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown">Сводные таблицы <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li>&nbsp;</li>
+								</ul>
+							</li>
+							<li class="dropdown">
+								<a class="dropdown-toggle" data-toggle="dropdown">Графики <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li>&nbsp;</li>
+								</ul>
+							</li>
+						</ul>
+						<ul class="nav navbar-nav navbar-right">
+							<li>
+								<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
+							</li>
+							<li class="dropdown {{if .active.admins}}active{{end}}">
+								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.user.Name}} <b class="caret"></b></a>
+								<ul class="dropdown-menu">
+									<li><a href="#" disabled>Профиль</a></li>
+									<li><a href="#" id="settings">Настройки</a></li>
+									<li class="{{if .active.admins}}active{{end}}"><a href="{{.panelPath}}/admins">Администраторы</a></li>
+									<li><a href="#">Сменить пароль</a></li>
+
+									<li class="divider"></li>
+									<li><a href="{{.panelPath}}/logout">Выход</a></li>
+								</ul>
+							</li>
+						</ul>
+					</div><!--/.nav-collapse -->
+				</div>
+			</div>
+			<div class="container" id="content">
+{{ end }}
+
+{{ define "footer" }}
+			</div> <!-- /container -->
+			<div class="back-to-top">
+				<a href="#top">
+					<span class="fa fa-chevron-up"></span>
+				</a>
+			</div>
+			<footer>
+				<div class="container">
+					© 2015-2016 <b>Adtraf LLC</b>, все права защищены.
+				</div>
+			</footer>
+		</div>
+		{{ dot "layout/form-settings.html" }}
+		{{ dot "layout/script.js" }}
+	</body>
+</html>
+{{ end }}

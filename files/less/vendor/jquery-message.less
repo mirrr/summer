@@ -1,0 +1,37 @@
+#message-block {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	left: auto;
+	width: 400px;
+	z-index: 12000;
+	max-height: 300px;
+	max-width: 90%;
+}
+
+#message-block>* {
+	border-radius: 5px;
+	background: rgba(209, 50, 37, 0.9);
+	color: #ffffff;
+	font-size: 15px;
+	font-weight: bold;
+	margin: 0px auto 15px;
+	padding: 20px 24px;
+	.box-shadow(12px 0px 25px rgba(0, 50, 130, 0.1));
+	display: none;
+	cursor: default;
+}
+
+#message-block .ok {
+	background: rgba(72, 133, 26, 0.9);
+}
+
+#message-block .info {
+	background: rgba(36, 142, 161, 0.9);
+}
+
+#message-block hr {
+	border-bottom: 1px dashed rgba(255, 255, 255, 0.3);
+	border-top: none;
+}
+

@@ -9,17 +9,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 )
 
 var (
-	dmu     sync.Mutex
-	dots    = map[string]string{}
-	spliter = regexp.MustCompile("[\\/]+")
+	dmu        sync.Mutex
+	dots       = map[string]string{}
+	spliter    = regexp.MustCompile("[\\/]+")
+	_, b, _, _ = runtime.Caller(0)
+	basepath   = filepath.Dir(b)
 )
 
 type (
@@ -40,6 +44,10 @@ func init() {
 			}
 		}()
 	}
+}
+
+func PackagePath() string {
+	return basepath
 }
 
 // плагин к шаблонизатору, подключающий файлы для doT.js без их парсинга
@@ -110,4 +118,23 @@ func getJSON(url string, target interface{}) error {
 	defer r.Body.Close()
 
 	return json.NewDecoder(r.Body).Decode(target)
+}
+
+// Extend struct data except default zero values
+func Extend(to interface{}, from interface{}) {
+	valueTo := reflect.ValueOf(to).Elem()
+	valueFrom := reflect.ValueOf(from).Elem()
+
+	if valueTo.Kind() != reflect.Struct || valueFrom.Kind() != reflect.Struct || valueTo.Type() != valueFrom.Type() {
+		panic(`Expected pointers of structs (same types)`)
+	}
+
+	for i := 0; i < valueFrom.Type().NumField(); i++ {
+		fValue := valueFrom.Field(i)
+		tValue := valueTo.Field(i)
+		if !tValue.CanSet() || reflect.DeepEqual(fValue.Interface(), reflect.Zero(fValue.Type()).Interface()) {
+			continue
+		}
+		valueTo.Field(i).Set(fValue)
+	}
 }

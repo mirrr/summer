@@ -1,0 +1,28 @@
+{{template "header" .}}
+	<h1>{{.title}}:</h1>
+	<div class="right-panel">
+		<input type="text" class="search" id="source-search" style="max-width: 9rem" placeholder="Поиск" />
+		&nbsp;&nbsp;
+		<button id="addItem"><span class="fa fa-plus"></span> Добавить администратора</button>
+	</div>
+	<div class="tablerunner">
+		<table id="maintable">
+			<thead>
+				<tr>
+					<th class="td-short">#</th>
+					<th>Пользователь</th>
+					<th>Логин</th>
+					<th>Примечание</th>
+					<th class="td-short">Действия</th>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	{{ dot "admins/form-add.html" }}
+	{{ dot "admins/form-edit.html" }}
+	{{ dot "admins/item.html" }}
+	{{ dot "admins/noitems.html" }}
+	{{ dot "admins/script.js" }}
+{{template "footer" .}}

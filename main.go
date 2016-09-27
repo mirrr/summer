@@ -1,72 +1,81 @@
 package summer
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mirrr/go-gin-ttpl"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
+	"gopkg.in/mirrr/types.v1"
 	"text/template"
-	/*	"gopkg.in/mgo.v2"
-		"gopkg.in/mgo.v2/bson"
-		"gopkg.in/mirrr/types.v1"
-		"time"*/)
-
-var (
-	settings Settings
+	"time"
+	"ttpl"
 )
 
 type (
+	// Settings intended for data transmission into the Init method of package
 	Settings struct {
-		Title  string
-		Path   string // URL path of panel - "/" by default
-		Views  string // file path of ./templates directory
-		Files  string // file path of ./files directory
-		TMPs   string // file path of /tmp directory
-		DBName string // MongoDB database name
-		Glob   map[string]interface{}
+		Port        uint
+		Title       string
+		AuthSalt    string
+		AuthPrefix  string
+		Path        string // URL path of panel - "/" by default
+		Views       string // file path of ./templates directory
+		Files       string // file path of ./files directory
+		TMPs        string // file path of /tmp directory
+		DBName      string // MongoDB database name
+		DefaultPage string
+		Vars        map[string]interface{}
+		TFuncMap    template.FuncMap
+	}
+
+	//Panel ...
+	Panel struct {
+		Settings
 	}
 )
 
 func Init(s Settings) {
+	panel := Panel{
+		Port:        80,
+		AuthSalt:    "+Af761",
+		AuthPrefix:  "adm-summer-",
+		Title:       "Summer Panel",
+		Path:        "/admin",
+		Views:       "./views",
+		Files:       "./files",
+		TMPs:        "/tmp",
+		DBName:      "summerPanel",
+		DefaultPage: "/settings",
+		Vars:        map[string]interface{}{},
+	}
+	// apply default settings
+	Extend(&panel.Settings, &s)
+	if panel.Vars == nil {
+		panel.Vars = make(map[string]interface{})
+	}
+	panel.Vars["panelPath"] = panel.Path
+	panel.Vars["title"] = panel.Title
 
-	if len(s.Title) == 0 {
-		s.Title = "Summer Panel"
-	}
-	if len(s.Path) == 0 {
-		s.Path = "/admin"
-	}
-	if len(s.Views) == 0 {
-		s.Views = "./views"
-	}
-	if len(s.Files) == 0 {
-		s.Files = "./files"
-	}
-	if len(s.TMPs) == 0 {
-		s.TMPs = "/tmp"
-	}
-	if len(s.TMPs) == 0 {
-		s.TMPs = "/tmp"
-	}
-	if len(s.DBName) == 0 {
-		s.DBName = "summerPanel"
-	}
-	if s.Glob == nil {
-		s.Glob = make(map[string]interface{})
-	}
-	s.Glob["panelPath"] = s.Path
-	s.Glob["title"] = s.Title
-
-	settings = s
-	fmt.Println(settings)
-
-	ai.Connect(mongo.DB(settings.DBName).C("ai"))
+	// init autoincrement module
+	ai.Connect(mongo.DB(s.DBName).C("ai"))
 
 	r := gin.New()
-	// плагин к шаблонизатору возвращающий глобальный список обьектов
-	glob := func(key string) interface{} {
-		return settings.Glob[key]
-	}
-	ttpl.Use(r, settings.Views+"/*", template.FuncMap{"dot": dot, "jsoner": jsoner, "glob": glob})
-	r.Static(settings.Path+"/files", settings.Files)
+	funcMap := template.FuncMap{"dot": dot, "jsoner": jsoner, "var": func(key string) interface{} {
+		return panel.Vars[key]
+	}}
+	ttpl.Use(r, []string{PackagePath() + "/templates/main/*", s.Views + "/*"}, funcMap)
+
+	r.Static(s.Path+"/files", s.Files)
+	r.Static(s.Path+"/pkgFiles", PackagePath()+"/files")
+	go func() {
+		panic(r.Run(":" + types.String(s.Port)))
+	}()
+
+	admins.Init()
+	admin := r.Group(s.Path)
+	auth(admin)
+	admin.GET("/", func(c *gin.Context) {
+		c.Header("Expires", time.Now().String())
+		c.Header("Cache-Control", "no-cache")
+		c.Redirect(301, s.DefaultPage)
+	})
 }

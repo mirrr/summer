@@ -1,0 +1,149 @@
+/*form*/
+
+input, textarea, select {
+	background-color: #ffffff;
+	border: 1px solid #ccccd5;
+	color: #444444;
+	display: inline-block;
+	font-size: 1rem;
+	min-height: 1rem;
+	line-height: 1.6rem;
+	padding: 0.3rem 0.5rem;
+	outline-style: none;
+	width: 300px;
+	margin-right: 0.3em;
+	max-width: 95%;
+	vertical-align: middle;
+}
+
+input[readonly], textarea[readonly], select[readonly] {
+	color: #666666;
+	font-style: italic;
+}
+
+input[type=text], input[type=password], input[type=time] {
+	color: #4D4D4D;
+	line-height: 160%;
+	height: auto;
+}
+
+input[type=checkbox] {
+	height: 17px;
+	width: 17px;
+}
+
+textarea {
+	border-radius: 2px;
+	font-size: 1rem;
+	color: #4D4D4D;
+	padding: 4px 5px !important;
+	width: 400px;
+	max-width: 95%;
+	height: 100px;
+}
+
+input[type=text]:focus, input[type=password]:focus, input[type=time]:focus, textarea:focus, select:focus {
+	border-color: #84B5D9;
+	background: #ffffff;
+}
+
+input::-webkit-input-placeholder, input::-moz-placeholder,
+/* Firefox 19+ */
+
+input:-moz-placeholder,
+/* Firefox 18- */
+
+input:-ms-input-placeholder {
+	color: #bbbbbb;
+}
+
+label {
+	display: inline-block;
+	min-width: 12em;
+	vertical-align: top;
+	position: relative;
+	margin-right: 0.3em;
+	top: 3px;
+	font-size: 0.9rem;
+	color: #555555;
+}
+
+label sup {
+	color: #CC5848 !important;
+	font-size: 0.8em;
+	position: relative;
+	top: -3px;
+	left: -3px;
+	padding-left: 2px;
+}
+
+label small {
+	color: #888888;
+	font-size: 0.8em;
+	font-style: italic;
+}
+
+.select_image {
+	background: url("/i/cabinet/select_strelka.jpg") no-repeat scroll right center transparent;
+	display: none;
+	z-index: 5;
+	position: absolute;
+	right: 1px;
+	height: 30px;
+	width: 26px;
+	.opacity(0);
+}
+
+form>div, form fieldset>div {
+	vertical-align: middle;
+	padding: 0.3rem 0;
+}
+
+form>div>*, form fieldset>div>* {
+	vertical-align: middle;
+}
+
+button {
+	border: none;
+	padding: 0.4em 0.6em;
+	font-size: 1rem;
+	color: contrast(@button-bgcolor, #333);
+	.gradient (desaturate(lighten(@button-bgcolor, 5%), 5%), @button-bgcolor);
+	// background: @button-bgcolor url("/files/images/tabs.png") repeat left center;
+	cursor: pointer;
+	outline-style: none;
+	line-height: 1.6rem;
+	vertical-align: middle;
+	.border-radius(2px);
+}
+
+button.grey {
+	background: grey;
+}
+
+button:hover {
+	.opacity(0.8)
+}
+
+button:active {
+	.opacity(0.9)
+}
+
+button:disabled, button.disabled, button[disabled] {
+	.opacity(0.5)
+}
+
+fieldset {
+	border: 1px solid #dddddd;
+	background: #fbfbfb;
+	padding: 1rem;
+	padding-top: 0.1rem;
+}
+
+fieldset legend {
+	color: @main-bgcolor-light;
+	width: auto;
+	display: inline-block;
+	border: none;
+	padding: 0.1em 0.5em;
+}
