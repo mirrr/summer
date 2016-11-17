@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/mirrr/govalidator"
+	"golang.org/x/crypto/sha3"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -137,4 +139,23 @@ func Extend(to interface{}, from interface{}) {
 		}
 		valueTo.Field(i).Set(fValue)
 	}
+}
+
+func H3hash(s string) string {
+	h3 := sha3.New512()
+	io.WriteString(h3, s)
+	return fmt.Sprintf("%x", h3.Sum(nil))
+}
+
+func dummy(c *gin.Context) {
+	c.Next()
+}
+func setCookie(c *gin.Context, name string, value string) {
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:    name,
+		Value:   value,
+		Path:    "/",
+		MaxAge:  32000000,
+		Expires: time.Now().AddDate(1, 0, 0),
+	})
 }

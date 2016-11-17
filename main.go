@@ -35,17 +35,19 @@ type (
 
 func Init(s Settings) {
 	panel := Panel{
-		Port:        80,
-		AuthSalt:    "+Af761",
-		AuthPrefix:  "adm-summer-",
-		Title:       "Summer Panel",
-		Path:        "/admin",
-		Views:       "./views",
-		Files:       "./files",
-		TMPs:        "/tmp",
-		DBName:      "summerPanel",
-		DefaultPage: "/settings",
-		Vars:        map[string]interface{}{},
+		Settings: Settings{
+			Port:        8080,
+			AuthSalt:    "+Af761",
+			AuthPrefix:  "adm-summer-",
+			Title:       "Summer Panel",
+			Path:        "/admin",
+			Views:       "./views",
+			Files:       "./files",
+			TMPs:        "/tmp",
+			DBName:      "summerPanel",
+			DefaultPage: "/settings",
+			Vars:        map[string]interface{}{},
+		},
 	}
 	// apply default settings
 	Extend(&panel.Settings, &s)
@@ -64,15 +66,15 @@ func Init(s Settings) {
 	}}
 	ttpl.Use(r, []string{PackagePath() + "/templates/main/*", s.Views + "/*"}, funcMap)
 
-	r.Static(s.Path+"/files", s.Files)
-	r.Static(s.Path+"/pkgFiles", PackagePath()+"/files")
+	r.Static(panel.Path+"/files", s.Files)
+	r.Static(panel.Path+"/pkgFiles", PackagePath()+"/files")
 	go func() {
 		panic(r.Run(":" + types.String(s.Port)))
 	}()
 
-	admins.Init()
-	admin := r.Group(s.Path)
-	auth(admin)
+	admins.Init(&panel)
+	admin := r.Group(panel.Path)
+	admins.Auth(admin)
 	admin.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")
