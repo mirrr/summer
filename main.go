@@ -1,6 +1,7 @@
 package summer
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
@@ -23,17 +24,24 @@ type (
 		TMPs        string // file path of /tmp directory
 		DBName      string // MongoDB database name
 		DefaultPage string
+		Language    string
 		Vars        map[string]interface{}
 		TFuncMap    template.FuncMap
+		FirstStart  func()
 	}
 
 	//Panel ...
 	Panel struct {
 		Settings
 	}
+
+	Simple interface {
+		Page(c *gin.Context)
+		Ajax(c *gin.Context)
+	}
 )
 
-func Init(s Settings) {
+func Init(s Settings) *Panel {
 	panel := Panel{
 		Settings: Settings{
 			Port:        8080,
@@ -44,9 +52,11 @@ func Init(s Settings) {
 			Views:       "./views",
 			Files:       "./files",
 			TMPs:        "/tmp",
+			Language:    "EN",
 			DBName:      "summerPanel",
 			DefaultPage: "/settings",
 			Vars:        map[string]interface{}{},
+			FirstStart:  func() {},
 		},
 	}
 	// apply default settings
@@ -66,8 +76,11 @@ func Init(s Settings) {
 	}}
 	ttpl.Use(r, []string{PackagePath() + "/templates/main/*", s.Views + "/*"}, funcMap)
 
+	// включение статических файлов
 	r.Static(panel.Path+"/files", s.Files)
 	r.Static(panel.Path+"/pkgFiles", PackagePath()+"/files")
+
+	// запуск веб-сервера
 	go func() {
 		panic(r.Run(":" + types.String(s.Port)))
 	}()
@@ -80,4 +93,15 @@ func Init(s Settings) {
 		c.Header("Cache-Control", "no-cache")
 		c.Redirect(301, s.DefaultPage)
 	})
+	return &panel
+}
+
+func Wait() {
+	for {
+		time.Sleep(time.Second)
+	}
+}
+
+func AddModule(s *Simple) {
+	fmt.Println(s)
 }

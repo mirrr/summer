@@ -57,7 +57,7 @@ func Use(r *gin.Engine, patterns []string, funcMap ...template.FuncMap) {
 		t = template.New("")
 	}
 	for _, pattern := range patterns {
-		t = template.Must(t.ParseGlob(pattern))
+		t, _ = t.ParseGlob(pattern)
 	}
 
 	r.HTMLRender = PageTemplate{"/", t}

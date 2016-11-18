@@ -159,3 +159,11 @@ func setCookie(c *gin.Context, name string, value string) {
 		Expires: time.Now().AddDate(1, 0, 0),
 	})
 }
+
+func Env(envName string, defaultValue string) (value string) {
+	value = os.Getenv(envName)
+	if len(value) == 0 {
+		value = defaultValue
+	}
+	return
+}
