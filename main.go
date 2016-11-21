@@ -1,14 +1,14 @@
 package summer
 
 import (
-	"fmt"
+	"text/template"
+	"time"
+	"ttpl"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
 	"gopkg.in/mirrr/types.v1"
-	"text/template"
-	"time"
-	"ttpl"
 )
 
 type (
@@ -28,6 +28,7 @@ type (
 		Vars        map[string]interface{}
 		TFuncMap    template.FuncMap
 		FirstStart  func()
+		r           *gin.RouterGroup
 	}
 
 	//Panel ...
@@ -36,6 +37,7 @@ type (
 	}
 
 	Simple interface {
+		Init(p *Panel)
 		Page(c *gin.Context)
 		Ajax(c *gin.Context)
 	}
@@ -86,9 +88,9 @@ func Init(s Settings) *Panel {
 	}()
 
 	admins.Init(&panel)
-	admin := r.Group(panel.Path)
-	admins.Auth(admin)
-	admin.GET("/", func(c *gin.Context) {
+	panel.r = r.Group(panel.Path)
+	admins.Auth(panel.r)
+	panel.r.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")
 		c.Redirect(301, s.DefaultPage)
@@ -102,6 +104,9 @@ func Wait() {
 	}
 }
 
-func AddModule(s *Simple) {
-	fmt.Println(s)
+func (panel *Panel) AddModule(module string, s Simple) Simple {
+	panel.r.GET("/"+module, s.Page)
+	panel.r.POST("/ajax/"+module+"/:method", s.Ajax)
+	s.Init(panel)
+	return s
 }

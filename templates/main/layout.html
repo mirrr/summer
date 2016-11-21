@@ -12,7 +12,7 @@
 		<link rel="icon" sizes="192x192" href="{{var "panelPath"}}/files/favicon192x192.png">
 		<title>{{.title}} GoAdmin</title>
 		<link rel="stylesheet" href="{{var "panelPath"}}/files/build/style.css">
-		<script type="text/javascript"> window.panelBasePath="{{.panelPath}}";</script>
+		<script type="text/javascript"> window.panelBasePath="{{var "panelPath"}}";</script>
 		<script type="text/javascript" src="{{var "panelPath"}}/files/build/main.js"></script>
 	</head>
 
@@ -28,22 +28,22 @@
 							<span class="icon-bar"></span>
 							<span class="icon-bar"></span>
 						</button>
-						<a class="navbar-brand" href="{{.panelPath}}"><span class="fa fa-books"> </span> </a>
+						<a class="navbar-brand" href="{{var "panelPath"}}"><span class="fa fa-books"> </span> </a>
 					</div>
 					<div class="navbar-collapse collapse">
 						<ul class="nav navbar-nav">
 							<li class="{{if .active.operations}}active{{end}}">
-								<a href="{{.panelPath}}/operations">Операции</a>
+								<a href="{{var "panelPath"}}/operations">Операции</a>
 							</li>
 							<li class="dropdown {{if or .active.users .active.clauses .active.accounts .active.currency .active.offices .active.projects}}active{{end}}">
 								<a class="dropdown-toggle" data-toggle="dropdown">Списки <b class="caret"></b></a>
 								<ul class="dropdown-menu">
-									<li class="{{if .active.clauses}}active{{end}}"><a href="{{.panelPath}}/clauses"><span class="fa fa-briefcase"></span> Статьи операций</a></li>
-									<li class="{{if .active.accounts}}active{{end}}"><a href="{{.panelPath}}/accounts"><span class="fa fa-stack"></span> Счета</a></li>
-									<li class="{{if .active.currency}}active{{end}}"><a href="{{.panelPath}}/currency"><span class="fa fa-ruble"></span> Валюта</a></li>
-									<li class="{{if .active.offices}}active{{end}}"><a href="{{.panelPath}}/offices"><span class="fa fa-office"></span> Офисы</a></li>
-									<li class="{{if .active.projects}}active{{end}}"><a href="{{.panelPath}}/projects"><span class="fa fa-slideshare"></span> Проекты</a></li>
-									<li class="{{if .active.users}}active{{end}}"><a href="{{.panelPath}}/users"><span class="fa fa-users"></span> База сотрудников</a></li>
+									<li class="{{if .active.clauses}}active{{end}}"><a href="{{var "panelPath"}}/clauses"><span class="fa fa-briefcase"></span> Статьи операций</a></li>
+									<li class="{{if .active.accounts}}active{{end}}"><a href="{{var "panelPath"}}/accounts"><span class="fa fa-stack"></span> Счета</a></li>
+									<li class="{{if .active.currency}}active{{end}}"><a href="{{var "panelPath"}}/currency"><span class="fa fa-ruble"></span> Валюта</a></li>
+									<li class="{{if .active.offices}}active{{end}}"><a href="{{var "panelPath"}}/offices"><span class="fa fa-office"></span> Офисы</a></li>
+									<li class="{{if .active.projects}}active{{end}}"><a href="{{var "panelPath"}}/projects"><span class="fa fa-slideshare"></span> Проекты</a></li>
+									<li class="{{if .active.users}}active{{end}}"><a href="{{var "panelPath"}}/users"><span class="fa fa-users"></span> База сотрудников</a></li>
 								</ul>
 							</li>
 							<li class="dropdown">
@@ -68,11 +68,11 @@
 								<ul class="dropdown-menu">
 									<li><a href="#" disabled>Профиль</a></li>
 									<li><a href="#" id="settings">Настройки</a></li>
-									<li class="{{if .active.admins}}active{{end}}"><a href="{{.panelPath}}/admins">Администраторы</a></li>
+									<li class="{{if .active.admins}}active{{end}}"><a href="{{var "panelPath"}}/admins">Администраторы</a></li>
 									<li><a href="#">Сменить пароль</a></li>
 
 									<li class="divider"></li>
-									<li><a href="{{.panelPath}}/logout">Выход</a></li>
+									<li><a href="{{var "panelPath"}}/logout">Выход</a></li>
 								</ul>
 							</li>
 						</ul>
