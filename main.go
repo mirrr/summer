@@ -51,7 +51,7 @@ func Init(s Settings) *Panel {
 			AuthPrefix:  "adm-summer-",
 			Title:       "Summer Panel",
 			Path:        "/admin",
-			Views:       "./views",
+			Views:       "./templates/main",
 			Files:       "./files",
 			TMPs:        "/tmp",
 			Language:    "EN",
