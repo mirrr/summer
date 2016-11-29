@@ -37,13 +37,6 @@ func (a *Admins) Init(panel *Panel) {
 	a.collection = mongo.DB(panel.DBName).C("admins")
 }
 
-func (a *Admins) Page(c *gin.Context) {
-	c.HTML(200, "admins.html", gin.H{
-		"title":  "Администраторы",
-		"user":   c.MustGet("user").(AdminsStruct),
-		"active": obj{"admins": true},
-	})
-}
 func (a *Admins) Auth(g *gin.RouterGroup) {
 	g.Use(a.Login(g.BasePath()))
 	g.POST("/z-auth", dummy) // хак для авторизации
