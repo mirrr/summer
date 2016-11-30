@@ -1,8 +1,8 @@
 package summer
 
 import (
-	"fmt"
 	"reflect"
+	"strings"
 	"text/template"
 	"time"
 	"ttpl"
@@ -71,13 +71,19 @@ type (
 )
 
 func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
-	st := reflect.ValueOf(s)
-	for i := 0; i < st.NumMethod(); i++ {
-		mtd := st.Method(i).Type()
-		mtd2 := st.Type().Method(i)
-		fmt.Println(mtd.String(), mtd2.Name)
+	if settings.Ajax == nil {
+		settings.Ajax = Func{}
+		st := reflect.ValueOf(s)
+		for i := 0; i < st.NumMethod(); i++ {
+			if st.Method(i).Type().String() == "func(*gin.Context)" {
+				name := strings.ToLower(st.Type().Method(i).Name)
+				if name != "ajax" && name != "page" {
+					method := st.Method(i).Interface().(func(*gin.Context))
+					settings.Ajax[name] = method
+				}
+			}
+		}
 	}
-
 	// default settings for some fields
 	if len(settings.PageRouteName) == 0 {
 		settings.PageRouteName = settings.Name
@@ -90,9 +96,6 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	}
 	if len(settings.CollectionName) == 0 {
 		settings.CollectionName = settings.Name
-	}
-	if settings.Ajax == nil {
-		settings.Ajax = Func{}
 	}
 
 	module := panel.RouterGroup.Group(settings.PageRouteName)
@@ -118,7 +121,7 @@ func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
 func (m *Module) Ajax(c *gin.Context) {
 	methodFound := false
 	for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
-		if c.Param("method") == ajaxRoute {
+		if strings.ToLower(c.Param("method")) == ajaxRoute {
 			ajaxFunc(c)
 			methodFound = true
 			break
@@ -168,7 +171,7 @@ func Create(s Settings) *Panel {
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
-	funcMap := template.FuncMap{"dot": dot, "jsoner": jsoner, "var": func(key string) interface{} {
+	funcMap := template.FuncMap{"jsoner": jsoner, "var": func(key string) interface{} {
 		return panel.Vars[key]
 	}}
 	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/*", panel.Views + "/*"}, panel.ViewsDoT, funcMap)

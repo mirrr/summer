@@ -8,22 +8,16 @@ import (
 	"github.com/mirrr/govalidator"
 	"golang.org/x/crypto/sha3"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 )
 
 var (
-	dmu        sync.Mutex
-	dots       = map[string]string{}
-	spliter    = regexp.MustCompile("[\\/]+")
 	_, b, _, _ = runtime.Caller(0)
 	basepath   = filepath.Dir(b)
 )
@@ -33,46 +27,8 @@ type (
 	arr []interface{}
 )
 
-func init() {
-	if os.Getenv("ENV") == "development" {
-		fmt.Println("Init templates cleanup")
-		go func() {
-			for range time.Tick(time.Second) {
-				func() {
-					dmu.Lock()
-					defer dmu.Unlock()
-					dots = map[string]string{}
-				}()
-			}
-		}()
-	}
-}
-
 func PackagePath() string {
 	return basepath
-}
-
-// плагин к шаблонизатору, подключающий файлы для doT.js без их парсинга
-// template.FuncMap{"dot": dot}
-func dot(name string) string {
-	dmu.Lock()
-	defer dmu.Unlock()
-	if _, exists := dots[name]; !exists {
-		dots[name] = "<!-- Template '" + name + "' not found! -->\n"
-		if dat, err := ioutil.ReadFile("templates/doT.js/" + name); err == nil {
-			s := strings.Split(name, ".")
-			tplName := spliter.Split(s[0], -1)
-			if s[len(s)-1] == "js" { // js темплейты
-				dots[name] = "<!-- doT.js template - " + name + " -->\n" +
-					"<script type='text/javascript' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
-
-			} else { // html темплейты
-				dots[name] = "<!-- doT.js template - " + name + " -->\n" +
-					"<script type='text/html' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
-			}
-		}
-	}
-	return dots[name]
 }
 
 // плагин к шаблонизатору, преобразующий объект в json

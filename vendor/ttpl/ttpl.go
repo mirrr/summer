@@ -6,9 +6,13 @@ import (
 	"github.com/gin-gonic/gin/render"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
+	"sync"
 	"text/template"
+	"time"
 )
 
 // PageTemplate struct for gin
@@ -24,6 +28,26 @@ type PageRender struct {
 	Name     string
 }
 
+var (
+	dmu     sync.Mutex
+	dots    = map[string]string{}
+	spliter = regexp.MustCompile("[\\/]+")
+)
+
+func init() {
+	if os.Getenv("ENV") == "development" {
+		fmt.Println("Init templates cleanup")
+		go func() {
+			for range time.Tick(time.Second) {
+				func() {
+					dmu.Lock()
+					defer dmu.Unlock()
+					dots = map[string]string{}
+				}()
+			}
+		}()
+	}
+}
 func (r PageTemplate) Instance(name string, data interface{}) render.Render {
 	return PageRender{
 		Template: r.templates,
@@ -51,12 +75,40 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	return nil
 }
 
+func dot(dotPath string) func(name string) string {
+	return func(name string) string {
+		dmu.Lock()
+		defer dmu.Unlock()
+		if _, exists := dots[name]; !exists {
+			dots[name] = "<!-- Template '" + name + "' not found! -->\n"
+			if dat, err := ioutil.ReadFile(dotPath + "/" + name); err == nil {
+				s := strings.Split(name, ".")
+				tplName := spliter.Split(s[0], -1)
+				if s[len(s)-1] == "js" { // js темплейты
+					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
+						"<script type='text/javascript' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
+
+				} else { // html темплейты
+					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
+						"<script type='text/html' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
+				}
+			}
+		}
+		return dots[name]
+	}
+}
+
 // Use ttpl render
 func Use(r *gin.Engine, patterns []string, dotPath string, funcMap ...template.FuncMap) {
 	t := template.New("")
-	if len(funcMap) > 0 {
-		t = t.Funcs(funcMap[0])
+	if len(funcMap) == 0 {
+		funcMap = []template.FuncMap{}
 	}
+
+	funcMap[0]["dot"] = dot(dotPath)
+
+	t = t.Funcs(funcMap[0])
+
 	for _, pattern := range patterns {
 		filenames, err := filepath.Glob(pattern)
 		if len(filenames) > 0 && err == nil {
@@ -90,7 +142,17 @@ func parseFiles(t *template.Template, dotPath string, filenames ...string) (*tem
 		dots, err := filepath.Glob(dotPath + "/" + shortName + "/*")
 		if len(dots) > 0 {
 			for _, dot := range dots {
-				s = s + `{{ dot "` + shortName + `/` + filepath.Base(dot) + `" }}` + "\n"
+				base := filepath.Base(dot)
+				if !strings.Contains(base, ".") {
+					subs, _ := filepath.Glob(dotPath + "/" + shortName + "/" + base + "/*")
+					for _, sub := range subs {
+						if !strings.Contains(filepath.Base(sub), " ") {
+							s = s + `{{ dot "` + shortName + `/` + base + `/` + filepath.Base(sub) + `"}}` + "\n"
+						}
+					}
+				} else if !strings.Contains(base, " ") {
+					s = s + `{{ dot "` + shortName + `/` + base + `" }}` + "\n"
+				}
 			}
 		}
 
