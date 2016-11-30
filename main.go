@@ -10,14 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mirrr/types.v1"
 )
 
 type (
-	Func map[string]func(c *gin.Context)
 
-	// Settings intended for data transmission into the Init method of package
+	// Settings intended for data transmission into the Create method of package
 	Settings struct {
 		Port        uint
 		Title       string
@@ -38,106 +36,11 @@ type (
 		Engine      *gin.Engine
 	}
 
-	//Panel ...
+	//Panel struct
 	Panel struct {
 		Settings
 	}
-
-	//Module ...
-	Module struct {
-		Panel
-		Collection *mgo.Collection
-		Settings   *ModuleSettings
-	}
-
-	//ModuleSettings ...
-	ModuleSettings struct {
-		Name           string
-		PageRouteName  string
-		AjaxRouteName  string
-		Title          string
-		CollectionName string
-		AllowGroups    []string
-		AllowRoles     []string
-		Ajax           Func
-	}
-
-	// Simple module interface
-	Simple interface {
-		Init(settings *ModuleSettings, panel *Panel)
-		Page(c *gin.Context)
-		Ajax(c *gin.Context)
-	}
 )
-
-func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
-	if settings.Ajax == nil {
-		settings.Ajax = Func{}
-		st := reflect.ValueOf(s)
-		for i := 0; i < st.NumMethod(); i++ {
-			if st.Method(i).Type().String() == "func(*gin.Context)" {
-				name := strings.ToLower(st.Type().Method(i).Name)
-				if name != "ajax" && name != "page" {
-					method := st.Method(i).Interface().(func(*gin.Context))
-					settings.Ajax[name] = method
-				}
-			}
-		}
-	}
-	// default settings for some fields
-	if len(settings.PageRouteName) == 0 {
-		settings.PageRouteName = settings.Name
-	}
-	if len(settings.AjaxRouteName) == 0 {
-		settings.AjaxRouteName = settings.PageRouteName
-	}
-	if len(settings.Title) == 0 {
-		settings.Title = settings.Name
-	}
-	if len(settings.CollectionName) == 0 {
-		settings.CollectionName = settings.Name
-	}
-
-	module := panel.RouterGroup.Group(settings.PageRouteName)
-	module.Use(func(c *gin.Context) {
-		c.Set("moduleName", settings.PageRouteName)
-	})
-	module.GET("/", s.Page)
-	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
-	s.Init(settings, panel)
-
-	return s
-}
-
-func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
-	m.Settings = settings
-	m.Panel = *panel
-	if m.Collection == nil {
-		m.Collection = mongo.DB(panel.DBName).C(settings.Name)
-	}
-}
-
-// Ajax - chooise method for module "admins"
-func (m *Module) Ajax(c *gin.Context) {
-	methodFound := false
-	for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
-		if strings.ToLower(c.Param("method")) == ajaxRoute {
-			ajaxFunc(c)
-			methodFound = true
-			break
-		}
-	}
-
-	if !methodFound {
-		c.String(400, "Method not found in module \"AdminsModule\"!")
-	}
-}
-func (m *Module) Page(c *gin.Context) {
-	c.HTML(200, m.Settings.Name+".html", gin.H{
-		"title": m.Settings.Title,
-		"user":  c.MustGet("user"),
-	})
-}
 
 // Create new panel
 func Create(s Settings) *Panel {
@@ -147,7 +50,7 @@ func Create(s Settings) *Panel {
 			AuthSalt:    "+Af761",
 			AuthPrefix:  "adm-summer-",
 			Title:       "Summer Panel",
-			Path:        "/admin",
+			Path:        "",
 			Views:       "./templates/main",
 			ViewsDoT:    "./templates/doT.js",
 			Files:       "./files",
@@ -194,6 +97,54 @@ func Create(s Settings) *Panel {
 		c.Redirect(301, panel.DefaultPage)
 	})
 	return &panel
+}
+
+// AddModule provide adding new panel module
+func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
+	if settings.Ajax == nil {
+		settings.Ajax = Func{}
+		st := reflect.ValueOf(s)
+		for i := 0; i < st.NumMethod(); i++ {
+			if st.Method(i).Type().String() == "func(*gin.Context)" {
+				name := strings.ToLower(st.Type().Method(i).Name)
+				if name != "ajax" && name != "page" {
+					method := st.Method(i).Interface().(func(*gin.Context))
+					settings.Ajax[name] = method
+				}
+			}
+		}
+	}
+
+	// default settings for some fields
+	if len(settings.PageRouteName) == 0 {
+		settings.PageRouteName = settings.Name
+	}
+	if len(settings.AjaxRouteName) == 0 {
+		settings.AjaxRouteName = settings.PageRouteName
+	}
+	if len(settings.Title) == 0 {
+		settings.Title = strings.Replace(settings.Name, "/", " ", -1)
+	}
+	if len(settings.MenuTitle) == 0 {
+		settings.MenuTitle = settings.Title
+	}
+	if len(settings.CollectionName) == 0 {
+		settings.CollectionName = strings.Replace(settings.Name, "/", "-", -1)
+	}
+	if len(settings.TemplateName) == 0 {
+		settings.TemplateName = strings.Replace(settings.Name, "/", "-", -1)
+	}
+
+	moduleGroup := panel.RouterGroup.Group(settings.PageRouteName)
+	moduleGroup.Use(func(c *gin.Context) {
+		c.Set("moduleName", settings.PageRouteName)
+	})
+	moduleGroup.GET("/", s.Page)
+	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
+	s.Init(settings, panel)
+
+	ModulesList[settings.Name] = s
+	return s
 }
 
 func Wait() {

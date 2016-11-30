@@ -15,6 +15,11 @@
 		<script type="text/javascript"> window.panelBasePath="{{var "panelPath"}}";</script>
 		<script type="text/javascript"> window.moduleName="{{var "moduleName"}}";</script>
 		<script type="text/javascript" src="{{var "panelPath"}}/pkgFiles/build/main.js"></script>
+		<style>
+			.w-title:before {background-image: url("{{var "panelPath"}}/pkgFiles/images/title.png");}
+			@media (min-width:1010px) {.navbar-default {"{{var "panelPath"}}/pkgFiles/images/title.png"}}
+			.w-wrap {background-image: url("{{var "panelPath"}}/pkgFiles/images/bg.png");}
+		</style>
 	</head>
 
 	<body>
@@ -92,7 +97,7 @@
 			</div>
 			<footer>
 				<div class="container">
-					© 2015-2017 <b>Oleksiy Chechel</b> (<a href="mailto:alex.mirrr@gmail.com">alex.mirrr@gmail.com</a>)
+					© 2015-2017 <a style="color: #444444" href="mailto:alex.mirrr@gmail.com"><b>Oleksiy Chechel</b></a>
 				</div>
 			</footer>
 		</div>

@@ -76,7 +76,9 @@ func (a *Admins) Login(panelPath string) gin.HandlerFunc {
 			if e1 && e2 && e3 {
 				if password == password2 {
 					if len(login) > 3 && len(password) > 6 {
-						if err := a.AddRaw(AdminsStruct{
+						a.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
+
+						if err := a.Add(AdminsStruct{
 							Login:    login,
 							Password: password,
 							Name:     "Admin",
@@ -131,8 +133,8 @@ func (a *Admins) Login(panelPath string) gin.HandlerFunc {
 	}
 }
 
-// AddRaw adds new admin from struct
-func (a *Admins) AddRaw(admin AdminsStruct) error {
+// Add new admin from struct
+func (a *Admins) Add(admin AdminsStruct) error {
 	admin.ID = ai.Next("admins")
 	admin.Password = H3hash(admin.Password + a.AuthSalt)
 	admin.Updated = uint(time.Now().Unix() / 60)

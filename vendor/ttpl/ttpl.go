@@ -31,7 +31,7 @@ type PageRender struct {
 var (
 	dmu     sync.Mutex
 	dots    = map[string]string{}
-	spliter = regexp.MustCompile("[\\/]+")
+	spliter = regexp.MustCompile("[\\s\\/]+")
 )
 
 func init() {
@@ -48,6 +48,7 @@ func init() {
 		}()
 	}
 }
+
 func (r PageTemplate) Instance(name string, data interface{}) render.Render {
 	return PageRender{
 		Template: r.templates,
@@ -86,11 +87,11 @@ func dot(dotPath string) func(name string) string {
 				tplName := spliter.Split(s[0], -1)
 				if s[len(s)-1] == "js" { // js темплейты
 					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
-						"<script type='text/javascript' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
+						"<script type='text/javascript' id='tpl_" + strings.Join(tplName[1:], "-") + "'>\n" + string(dat) + "</script>\n"
 
 				} else { // html темплейты
 					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
-						"<script type='text/html' id='tpl_" + tplName[len(tplName)-1] + "'>\n" + string(dat) + "</script>\n"
+						"<script type='text/html' id='tpl_" + strings.Join(tplName[1:], "-") + "'>\n" + string(dat) + "</script>\n"
 				}
 			}
 		}
