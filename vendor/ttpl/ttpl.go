@@ -111,17 +111,19 @@ func Use(r *gin.Engine, pathes []string, dotPath string, funcMap ...template.Fun
 	t = t.Funcs(funcMap[0])
 
 	for _, path := range pathes {
-		filepath.Walk(path, func(file string, info os.FileInfo, err error) error {
-			if !info.IsDir() && err == nil {
-				tt, err := parseFiles(t, dotPath, path, file)
-				if err == nil {
-					t = tt
-				} else if err != nil {
-					fmt.Println(err)
+		if _, err := os.Stat(path); err == nil {
+			filepath.Walk(path, func(file string, info os.FileInfo, err error) error {
+				if !info.IsDir() && err == nil {
+					tt, err := parseFiles(t, dotPath, path, file)
+					if err == nil {
+						t = tt
+					} else if err != nil {
+						fmt.Println(err)
+					}
 				}
-			}
-			return nil
-		})
+				return nil
+			})
+		}
 	}
 
 	r.HTMLRender = PageTemplate{"/", t}

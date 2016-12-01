@@ -9,7 +9,7 @@
 	</head>
 
 	<body>
-		<form class="sign-up" id="loginfm" method="POST" action="{{.panelPath}}/z-auth">
+		<form class="sign-up" id="loginfm" method="POST" action="{{var "panelPath"}}/z-auth">
 			<h1 class="sign-up-title">Админ панель</h1>
 			<input type="text" class="sign-up-input" placeholder="Login" required="required" name="admin-z-login">
 			<input type="password" class="sign-up-input" placeholder="Пароль" required="required" name="admin-z-password">

@@ -38,6 +38,7 @@ func (a *authAdmins) Init(panel *Panel) {
 }
 
 func (a *authAdmins) Auth(g *gin.RouterGroup) {
+	fmt.Println("...", g.BasePath())
 	g.Use(a.Login(g.BasePath()))
 	g.POST("/z-auth", dummy) // хак для авторизации
 	g.POST("/z-register", dummy)
@@ -73,6 +74,7 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 			login, e1 := c.GetPostForm("admin-z-login")
 			password, e2 := c.GetPostForm("admin-z-password")
 			password2, e3 := c.GetPostForm("admin-z-password-2")
+
 			if e1 && e2 && e3 {
 				if password == password2 {
 					if len(login) > 3 && len(password) > 6 {

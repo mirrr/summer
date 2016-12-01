@@ -39,30 +39,7 @@
 					<div class="navbar-collapse collapse">
 						<ul class="nav navbar-nav">
 							<li class="{{if .active.operations}}active{{end}}">
-								<a href="{{var "panelPath"}}/operations">Операции</a>
-							</li>
-							<li class="dropdown {{if or .active.users .active.clauses .active.accounts .active.currency .active.offices .active.projects}}active{{end}}">
-								<a class="dropdown-toggle" data-toggle="dropdown">Списки <b class="caret"></b></a>
-								<ul class="dropdown-menu">
-									<li class="{{if .active.clauses}}active{{end}}"><a href="{{var "panelPath"}}/clauses"><span class="fa fa-briefcase"></span> Статьи операций</a></li>
-									<li class="{{if .active.accounts}}active{{end}}"><a href="{{var "panelPath"}}/accounts"><span class="fa fa-stack"></span> Счета</a></li>
-									<li class="{{if .active.currency}}active{{end}}"><a href="{{var "panelPath"}}/currency"><span class="fa fa-ruble"></span> Валюта</a></li>
-									<li class="{{if .active.offices}}active{{end}}"><a href="{{var "panelPath"}}/offices"><span class="fa fa-office"></span> Офисы</a></li>
-									<li class="{{if .active.projects}}active{{end}}"><a href="{{var "panelPath"}}/projects"><span class="fa fa-slideshare"></span> Проекты</a></li>
-									<li class="{{if .active.users}}active{{end}}"><a href="{{var "panelPath"}}/users"><span class="fa fa-users"></span> База сотрудников</a></li>
-								</ul>
-							</li>
-							<li class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown">Сводные таблицы <b class="caret"></b></a>
-								<ul class="dropdown-menu">
-									<li>&nbsp;</li>
-								</ul>
-							</li>
-							<li class="dropdown">
-								<a class="dropdown-toggle" data-toggle="dropdown">Графики <b class="caret"></b></a>
-								<ul class="dropdown-menu">
-									<li>&nbsp;</li>
-								</ul>
+								<a href="{{var "panelPath"}}/operations">Настройки</a>
 							</li>
 						</ul>
 						<ul class="nav navbar-nav navbar-right">
@@ -75,7 +52,6 @@
 									<li><a href="#" disabled>Профиль</a></li>
 									<li><a href="#" id="settings">Настройки</a></li>
 									<li class="{{if .active.admins}}active{{end}}"><a href="{{var "panelPath"}}/admins">Администраторы</a></li>
-									<li><a href="#">Сменить пароль</a></li>
 
 									<li class="divider"></li>
 									<li><a href="{{var "panelPath"}}/logout">Выход</a></li>
