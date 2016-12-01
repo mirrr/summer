@@ -64,7 +64,7 @@ func Create(s Settings) *Panel {
 		},
 	}
 	// apply default settings
-	Extend(&panel.Settings, &s)
+	extend(&panel.Settings, &s)
 	if panel.Vars == nil {
 		panel.Vars = make(map[string]interface{})
 	}

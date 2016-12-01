@@ -22,29 +22,29 @@ type (
 		Deleted  bool   `form:"-" json:"-" bson:"deleted"`
 	}
 
-	Admins struct {
+	authAdmins struct {
 		collection *mgo.Collection
 		Panel
 	}
 )
 
 var (
-	admins = Admins{}
+	admins = authAdmins{}
 )
 
-func (a *Admins) Init(panel *Panel) {
+func (a *authAdmins) Init(panel *Panel) {
 	a.Panel = *panel
 	a.collection = mongo.DB(panel.DBName).C("admins")
 }
 
-func (a *Admins) Auth(g *gin.RouterGroup) {
+func (a *authAdmins) Auth(g *gin.RouterGroup) {
 	g.Use(a.Login(g.BasePath()))
 	g.POST("/z-auth", dummy) // хак для авторизации
 	g.POST("/z-register", dummy)
 	g.GET("/logout", a.Logout(g.BasePath()))
 }
 
-func (a *Admins) Logout(panelPath string) gin.HandlerFunc {
+func (a *authAdmins) Logout(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:    a.AuthPrefix + "hash",
@@ -60,7 +60,7 @@ func (a *Admins) Logout(panelPath string) gin.HandlerFunc {
 	}
 }
 
-func (a *Admins) Login(panelPath string) gin.HandlerFunc {
+func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		adminsArr := map[string]AdminsStruct{}
 		for _, v := range a.GetArr() {
@@ -134,7 +134,7 @@ func (a *Admins) Login(panelPath string) gin.HandlerFunc {
 }
 
 // Add new admin from struct
-func (a *Admins) Add(admin AdminsStruct) error {
+func (a *authAdmins) Add(admin AdminsStruct) error {
 	admin.ID = ai.Next("admins")
 	admin.Password = H3hash(admin.Password + a.AuthSalt)
 	admin.Updated = uint(time.Now().Unix() / 60)
@@ -146,7 +146,7 @@ func (a *Admins) Add(admin AdminsStruct) error {
 }
 
 // GetArr exports array of admins
-func (a *Admins) GetArr() (admins []AdminsStruct) {
+func (a *authAdmins) GetArr() (admins []AdminsStruct) {
 	if err := a.collection.Find(obj{"deleted": obj{"$ne": true}}).All(&admins); err != nil {
 		fmt.Println("Error (admins.GetArr):", err)
 	}
