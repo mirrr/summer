@@ -77,7 +77,7 @@ func Create(s Settings) *Panel {
 	funcMap := template.FuncMap{"jsoner": jsoner, "var": func(key string) interface{} {
 		return panel.Vars[key]
 	}}
-	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/*", panel.Views + "/*"}, panel.ViewsDoT, funcMap)
+	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/", panel.Views + "/"}, panel.ViewsDoT, funcMap)
 
 	// включение статических файлов
 	panel.Engine.Static(panel.Path+"/files", panel.Files)

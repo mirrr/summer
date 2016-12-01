@@ -100,7 +100,7 @@ func dot(dotPath string) func(name string) string {
 }
 
 // Use ttpl render
-func Use(r *gin.Engine, patterns []string, dotPath string, funcMap ...template.FuncMap) {
+func Use(r *gin.Engine, pathes []string, dotPath string, funcMap ...template.FuncMap) {
 	t := template.New("")
 	if len(funcMap) == 0 {
 		funcMap = []template.FuncMap{}
@@ -110,18 +110,18 @@ func Use(r *gin.Engine, patterns []string, dotPath string, funcMap ...template.F
 
 	t = t.Funcs(funcMap[0])
 
-	for _, pattern := range patterns {
-		filenames, err := filepath.Glob(pattern)
-		if len(filenames) > 0 && err == nil {
-			tt, err := parseFiles(t, dotPath, filenames...)
-			if err == nil {
-				t = tt
-			} else if err != nil {
-				fmt.Println(err)
+	for _, path := range pathes {
+		filepath.Walk(path, func(file string, info os.FileInfo, err error) error {
+			if !info.IsDir() && err == nil {
+				tt, err := parseFiles(t, dotPath, path, file)
+				if err == nil {
+					t = tt
+				} else if err != nil {
+					fmt.Println(err)
+				}
 			}
-		} else if err != nil {
-			fmt.Println(err)
-		}
+			return nil
+		})
 	}
 
 	r.HTMLRender = PageTemplate{"/", t}
@@ -129,14 +129,14 @@ func Use(r *gin.Engine, patterns []string, dotPath string, funcMap ...template.F
 
 // parseFiles is the helper for the method and function. If the argument
 // template is nil, it is created from the first file.
-func parseFiles(t *template.Template, dotPath string, filenames ...string) (*template.Template, error) {
+func parseFiles(t *template.Template, dotPath string, path string, filenames ...string) (*template.Template, error) {
 	for _, filename := range filenames {
 		b, err := ioutil.ReadFile(filename)
 		if err != nil {
 			return nil, err
 		}
 		s := string(b)
-		name := filepath.Base(filename)
+		name := strings.Replace(filename, path, "", 1)
 		shortName := strings.Split(name, ".")[0]
 
 		// DoT.js
@@ -160,6 +160,7 @@ func parseFiles(t *template.Template, dotPath string, filenames ...string) (*tem
 		if name != "layout.html" && name != "login.html" && name != "firstStart.html" {
 			s = `{{template "header" .}}` + s + `{{template "footer" .}}`
 		}
+
 		var tmpl *template.Template
 		if t == nil {
 			t = template.New(name)
