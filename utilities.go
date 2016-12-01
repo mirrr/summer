@@ -78,8 +78,8 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-// Extend struct data except default zero values
-func Extend(to interface{}, from interface{}) {
+// extend struct data except default zero values
+func extend(to interface{}, from interface{}) {
 	valueTo := reflect.ValueOf(to).Elem()
 	valueFrom := reflect.ValueOf(from).Elem()
 
