@@ -17,23 +17,24 @@ type (
 
 	// Settings intended for data transmission into the Create method of package
 	Settings struct {
-		Port        uint
-		Title       string
-		AuthSalt    string
-		AuthPrefix  string
-		Path        string // URL path of panel - "/" by default
-		Views       string // file path of ./templates directory
-		ViewsDoT    string // file path of doT.js templates directory
-		Files       string // file path of ./files directory
-		TMPs        string // file path of /tmp directory
-		DBName      string // MongoDB database name
-		DefaultPage string
-		Language    string
-		Vars        map[string]interface{}
-		TFuncMap    template.FuncMap
-		FirstStart  func()
-		RouterGroup *gin.RouterGroup
-		Engine      *gin.Engine
+		Port           uint
+		Title          string
+		AuthSalt       string
+		AuthPrefix     string
+		Path           string // URL path of panel - "/" by default
+		Views          string // file path of ./templates directory
+		ViewsDoT       string // file path of doT.js templates directory
+		Files          string // file path of ./files directory
+		TMPs           string // file path of /tmp directory
+		DBName         string // MongoDB database name
+		DefaultPage    string
+		Language       string
+		UserCollection string
+		Vars           map[string]interface{}
+		TFuncMap       template.FuncMap
+		FirstStart     func()
+		RouterGroup    *gin.RouterGroup
+		Engine         *gin.Engine
 	}
 
 	//Panel struct
@@ -46,21 +47,22 @@ type (
 func Create(s Settings) *Panel {
 	panel := Panel{
 		Settings: Settings{
-			Port:        8080,
-			AuthSalt:    "+Af761",
-			AuthPrefix:  "adm-summer-",
-			Title:       "Summer Panel",
-			Path:        "",
-			Views:       "templates/main",
-			ViewsDoT:    "templates/doT.js",
-			Files:       "files",
-			TMPs:        "/tmp",
-			Language:    "EN",
-			DBName:      "summerPanel",
-			DefaultPage: "/settings",
-			Vars:        map[string]interface{}{},
-			FirstStart:  func() {},
-			Engine:      gin.New(),
+			Port:           8080,
+			AuthSalt:       "+Af761",
+			AuthPrefix:     "adm-summer-",
+			Title:          "Summer Panel",
+			Path:           "",
+			Views:          "templates/main",
+			ViewsDoT:       "templates/doT.js",
+			Files:          "files",
+			TMPs:           "/tmp",
+			Language:       "EN",
+			DBName:         "summerPanel",
+			DefaultPage:    "/settings",
+			UserCollection: "admins",
+			Vars:           map[string]interface{}{},
+			FirstStart:     func() {},
+			Engine:         gin.New(),
 		},
 	}
 	// apply default settings

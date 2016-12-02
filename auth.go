@@ -11,7 +11,7 @@ import (
 )
 
 type (
-	AdminsStruct struct {
+	UsersStruct struct {
 		ID       uint64 `form:"id"  json:"id"  bson:"_id"`
 		Root     bool   `form:"-"  json:"root"  bson:"root"`
 		Name     string `form:"name" json:"name" bson:"name" binding:"required,min=3"`
@@ -20,6 +20,7 @@ type (
 		Password string `form:"password" json:"-" bson:"password"`
 		Updated  uint   `form:"-" json:"-" bson:"updated"`
 		Deleted  bool   `form:"-" json:"-" bson:"deleted"`
+		Settings interface{}
 	}
 
 	authAdmins struct {
@@ -34,11 +35,10 @@ var (
 
 func (a *authAdmins) Init(panel *Panel) {
 	a.Panel = *panel
-	a.collection = mongo.DB(panel.DBName).C("admins")
+	a.collection = mongo.DB(panel.DBName).C(a.Panel.UserCollection)
 }
 
 func (a *authAdmins) Auth(g *gin.RouterGroup) {
-	fmt.Println("...", g.BasePath())
 	g.Use(a.Login(g.BasePath()))
 	g.POST("/z-auth", dummy) // хак для авторизации
 	g.POST("/z-register", dummy)
@@ -63,7 +63,7 @@ func (a *authAdmins) Logout(panelPath string) gin.HandlerFunc {
 
 func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		adminsArr := map[string]AdminsStruct{}
+		adminsArr := map[string]UsersStruct{}
 		for _, v := range a.GetArr() {
 			adminsArr[v.Login] = v
 		}
@@ -80,7 +80,7 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 					if len(login) > 3 && len(password) > 6 {
 						a.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
 
-						if err := a.Add(AdminsStruct{
+						if err := a.Add(UsersStruct{
 							Login:    login,
 							Password: password,
 							Name:     "Admin",
@@ -136,7 +136,7 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 }
 
 // Add new admin from struct
-func (a *authAdmins) Add(admin AdminsStruct) error {
+func (a *authAdmins) Add(admin UsersStruct) error {
 	admin.ID = ai.Next("admins")
 	admin.Password = H3hash(admin.Password + a.AuthSalt)
 	admin.Updated = uint(time.Now().Unix() / 60)
@@ -148,7 +148,7 @@ func (a *authAdmins) Add(admin AdminsStruct) error {
 }
 
 // GetArr exports array of admins
-func (a *authAdmins) GetArr() (admins []AdminsStruct) {
+func (a *authAdmins) GetArr() (admins []UsersStruct) {
 	if err := a.collection.Find(obj{"deleted": obj{"$ne": true}}).All(&admins); err != nil {
 		fmt.Println("Error (admins.GetArr):", err)
 	}
