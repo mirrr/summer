@@ -9,6 +9,8 @@ type (
 )
 
 var (
+	menusList = []*Menu{}
+
 	// RootMenu is zerro-level menu
 	RootMenu = Menu{}
 
@@ -21,5 +23,7 @@ var (
 
 // Add submenu to current menu
 func (m *Menu) Add(title string) *Menu {
-	return &Menu{Title: title, Parent: m}
+	menu := &Menu{Title: title, Parent: m}
+	menusList = append(menusList, menu)
+	return menu
 }

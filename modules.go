@@ -44,7 +44,7 @@ type (
 )
 
 var (
-	ModulesList = map[string]Simple{}
+	modulesList = map[string]Simple{}
 )
 
 // Ajax  is default module's ajax method
@@ -66,8 +66,10 @@ func (m *Module) Ajax(c *gin.Context) {
 // Page is default module's page rendering method
 func (m *Module) Page(c *gin.Context) {
 	c.HTML(200, m.Settings.TemplateName+".html", gin.H{
-		"title": m.Settings.Title,
-		"user":  c.MustGet("user"),
+		"title":   m.Settings.Title,
+		"user":    c.MustGet("user"),
+		"modules": &modulesList,
+		"menus":   &menusList,
 	})
 }
 

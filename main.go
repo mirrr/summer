@@ -72,6 +72,8 @@ func Create(s Settings) *Panel {
 	}
 	panel.Vars["panelPath"] = panel.Path
 	panel.Vars["title"] = panel.Title
+	panel.Vars["modules"] = &modulesList
+	panel.Vars["menus"] = &menusList
 
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))
@@ -145,7 +147,7 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
 	s.Init(settings, panel)
 
-	ModulesList[settings.Name] = s
+	modulesList[settings.Name] = s
 	return s
 }
 
