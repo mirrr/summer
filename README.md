@@ -95,6 +95,7 @@ func (module *NewsModule) Page(c *gin.Context) {
 ```
    
 **Result:**
+(On [http://localhost:8080/panel/news/](http://localhost:8080/panel/news/) )
 ![Summer screenshot](https://cloud.githubusercontent.com/assets/2770221/20869933/3a89113e-ba86-11e6-9a22-2967cb1eac05.png)
 
 ## Examples
