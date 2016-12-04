@@ -10,7 +10,7 @@ go get gopkg.in/mirrr/summer.v1
 
 ## Getting Started
 
-```golang
+```go
 package main
 
 import (
@@ -41,7 +41,7 @@ func main() {
  
 **/news.go**   
    
-```golang
+```go
 package main
 
 import (
