@@ -24,48 +24,12 @@
 
 	<body>
 		<div id="all">
-			<div class="navbar navbar-default navbar-static-top" role="navigation">
-				<a name="top"></a>
-				<div class="container">
-					<div class="navbar-header">
-						<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-							<span class="sr-only">Видимость меню</span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-							<span class="icon-bar"></span>
-						</button>
-						<a class="navbar-brand" href="{{var "panelPath"}}"><span class="fa fa-books"> </span> </a>
-					</div>
-					<div class="navbar-collapse collapse">
-						<ul class="nav navbar-nav">
-							<li class="{{if .active.operations}}active{{end}}">
-								<a href="{{var "panelPath"}}/operations">Настройки</a>
-							</li>
-						</ul>
-						<ul class="nav navbar-nav navbar-right">
-							<li>
-								<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
-							</li>
-							<li class="dropdown {{if .active.admins}}active{{end}}">
-								<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.user.Name}} <b class="caret"></b></a>
-								<ul class="dropdown-menu">
-									<li><a href="#" disabled>Профиль</a></li>
-									<li><a href="#" id="settings">Настройки</a></li>
-									<li class="{{if .active.admins}}active{{end}}"><a href="{{var "panelPath"}}/admins">Администраторы</a></li>
-
-									<li class="divider"></li>
-									<li><a href="{{var "panelPath"}}/logout">Выход</a></li>
-								</ul>
-							</li>
-						</ul>
-					</div><!--/.nav-collapse -->
-				</div>
-			</div>
+			{{template "menu" .}}
 			<div class="container" id="content">
 {{ end }}
 
 {{ define "footer" }}
-			</div> <!-- /container -->
+			</div>
 			<div class="back-to-top">
 				<a href="#top">
 					<span class="fa fa-chevron-up"></span>
@@ -82,3 +46,54 @@
 	</body>
 </html>
 {{ end }}
+
+{{ define "menu"}}
+	<div class="navbar navbar-default navbar-static-top" role="navigation">
+		<a name="top"></a>
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Видимость меню</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="{{var "panelPath"}}"><span class="fa fa-books"> </span> </a>
+			</div>
+			<div class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					{{template "subMenu" (var "mainMenu")}}
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					<li>
+						<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
+					</li>
+					<li class="dropdown {{if .active.admins}}active{{end}}">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.user.Name}} <b class="caret"></b></a>
+						<ul class="dropdown-menu">
+							{{range menu (var "dropMenu")}}{{if not .SubMenu }}{{template "menuItem" .}}{{end}}{{end}}
+							<li class="divider"></li>
+							<li><a href="{{var "panelPath"}}/logout">Выход</a></li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+{{ end }}
+
+{{ define "menuItem" }}
+	<li class="">
+		<a href="{{var "panelPath"}}{{ .Link }}">{{ .Title }}</a>
+	</li>
+{{end}}
+
+{{ define "subMenu" }}
+	{{range menu .}}{{if and .SubMenu .Current }}
+	<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ .Title }} <b class="caret"></b></a>
+		<ul class="dropdown-menu">
+			{{template "subMenu" .Current}}
+		</ul>
+	</li>
+	{{else}}{{template "menuItem" .}}{{end}}{{end}}
+{{end}}

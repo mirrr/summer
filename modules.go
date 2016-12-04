@@ -2,6 +2,7 @@ package summer
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-wrapper"
@@ -24,6 +25,7 @@ type (
 		Name           string
 		Menu           *Menu
 		MenuTitle      string
+		MenuOrder      int
 		PageRouteName  string
 		AjaxRouteName  string
 		Title          string
@@ -40,11 +42,13 @@ type (
 		Init(settings *ModuleSettings, panel *Panel)
 		Page(c *gin.Context)
 		Ajax(c *gin.Context)
+		GetSettings() *ModuleSettings
 	}
 )
 
 var (
-	modulesList = map[string]Simple{}
+	modulesList   = map[string]Simple{}
+	modulesListMu = sync.Mutex{}
 )
 
 // Ajax  is default module's ajax method
@@ -66,10 +70,8 @@ func (m *Module) Ajax(c *gin.Context) {
 // Page is default module's page rendering method
 func (m *Module) Page(c *gin.Context) {
 	c.HTML(200, m.Settings.TemplateName+".html", gin.H{
-		"title":   m.Settings.Title,
-		"user":    c.MustGet("user"),
-		"modules": &modulesList,
-		"menus":   &menusList,
+		"title": m.Settings.Title,
+		"user":  c.MustGet("user"),
 	})
 }
 
@@ -80,4 +82,9 @@ func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
 	if m.Collection == nil {
 		m.Collection = mongo.DB(panel.DBName).C(settings.CollectionName)
 	}
+}
+
+// Page is default module's page rendering method
+func (m *Module) GetSettings() *ModuleSettings {
+	return m.Settings
 }

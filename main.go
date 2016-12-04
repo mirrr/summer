@@ -72,13 +72,13 @@ func Create(s Settings) *Panel {
 	}
 	panel.Vars["panelPath"] = panel.Path
 	panel.Vars["title"] = panel.Title
-	panel.Vars["modules"] = &modulesList
-	panel.Vars["menus"] = &menusList
+	panel.Vars["mainMenu"] = &MainMenu
+	panel.Vars["dropMenu"] = &DropMenu
 
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
-	funcMap := template.FuncMap{"jsoner": jsoner, "var": func(key string) interface{} {
+	funcMap := template.FuncMap{"jsoner": jsoner, "menu": getMenuItems, "var": func(key string) interface{} {
 		return panel.Vars[key]
 	}}
 	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/", panel.Views + "/"}, panel.ViewsDoT, funcMap)
@@ -147,7 +147,9 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
 	s.Init(settings, panel)
 
+	modulesListMu.Lock()
 	modulesList[settings.Name] = s
+	modulesListMu.Unlock()
 	return s
 }
 
