@@ -27,6 +27,7 @@ type (
 	arr []interface{}
 )
 
+// PackagePath returns file path of Summer package location
 func PackagePath() string {
 	return basepath
 }
@@ -97,6 +98,7 @@ func extend(to interface{}, from interface{}) {
 	}
 }
 
+// H3hash create sha512 hash of string
 func H3hash(s string) string {
 	h3 := sha3.New512()
 	io.WriteString(h3, s)
@@ -116,6 +118,7 @@ func setCookie(c *gin.Context, name string, value string) {
 	})
 }
 
+// Env returns environment variable value (or default value if env.variable absent)
 func Env(envName string, defaultValue string) (value string) {
 	value = os.Getenv(envName)
 	if len(value) == 0 {

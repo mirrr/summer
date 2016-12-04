@@ -84,7 +84,7 @@ func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
 	}
 }
 
-// Page is default module's page rendering method
+// GetSettings needs for correct settings getting from module struct
 func (m *Module) GetSettings() *ModuleSettings {
 	return m.Settings
 }
