@@ -38,15 +38,12 @@ func jsoner(object interface{}) string {
 	return string(j)
 }
 
-func postBind(c *gin.Context, ret interface{}) bool {
+// PostBind binds data from post request and validates them
+func PostBind(c *gin.Context, ret interface{}) bool {
 	c.BindWith(ret, binding.Form)
 	if _, err := govalidator.ValidateStruct(ret); err != nil {
 		ers := []string{}
 		for k, v := range govalidator.ErrorsByField(err) {
-			v = strings.Replace(v, "non zero value required", "не может быть пустым", -1)
-			v = strings.Replace(v, "does not validate by 'min' tag", "меньше необходимого", -1)
-			v = strings.Replace(v, "does not validate by 'max' tag", "больше необходимого", -1)
-			v = strings.Replace(v, "does not validate as email", "- не электронный адрес", -1)
 			ers = append(ers, k+": "+v)
 		}
 		c.String(400, strings.Join(ers, "<hr />"))

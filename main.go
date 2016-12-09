@@ -70,6 +70,18 @@ func Create(s Settings) *Panel {
 	if panel.Vars == nil {
 		panel.Vars = make(map[string]interface{})
 	}
+	// for correct templates render
+	if len(panel.Path) > 0 {
+		if panel.Path[len(panel.Path)-1] == '/' {
+			panel.Path = panel.Path[:len(panel.Path)-1]
+		}
+		if panel.Path[0] != '/' {
+			panel.Path = "/" + panel.Path
+		}
+	}
+	if len(panel.DefaultPage) == 0 || panel.DefaultPage[0] != '/' {
+		panel.DefaultPage = "/" + panel.DefaultPage
+	}
 	panel.Vars["panelPath"] = panel.Path
 	panel.Vars["title"] = panel.Title
 	panel.Vars["mainMenu"] = &MainMenu
@@ -98,7 +110,7 @@ func Create(s Settings) *Panel {
 	panel.RouterGroup.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")
-		c.Redirect(301, panel.DefaultPage)
+		c.Redirect(301, panel.Path+panel.DefaultPage)
 	})
 	return &panel
 }
