@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
+	"golang.org/x/net/websocket"
 	"gopkg.in/mirrr/types.v1"
 )
 
@@ -123,20 +124,35 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 		for i := 0; i < st.NumMethod(); i++ {
 			if st.Method(i).Type().String() == "func(*gin.Context)" {
 				name := strings.ToLower(st.Type().Method(i).Name)
-				if name != "ajax" && name != "page" {
+				if name != "ajax" && name != "page" && name != "websockets" {
 					method := st.Method(i).Interface().(func(*gin.Context))
 					settings.Ajax[name] = method
 				}
 			}
 		}
 	}
-
+	if settings.Websockets == nil {
+		settings.Websockets = WebFunc{}
+		st := reflect.ValueOf(s)
+		for i := 0; i < st.NumMethod(); i++ {
+			if st.Method(i).Type().String() == "func(*websocket.Conn)" {
+				name := strings.ToLower(st.Type().Method(i).Name)
+				if name != "ajax" && name != "page" && name != "websockets" {
+					method := st.Method(i).Interface().(func(*websocket.Conn))
+					settings.Websockets[name] = method
+				}
+			}
+		}
+	}
 	// default settings for some fields
 	if len(settings.PageRouteName) == 0 {
 		settings.PageRouteName = settings.Name
 	}
 	if len(settings.AjaxRouteName) == 0 {
 		settings.AjaxRouteName = settings.PageRouteName
+	}
+	if len(settings.SocketsRouteName) == 0 {
+		settings.SocketsRouteName = settings.PageRouteName
 	}
 	if len(settings.Title) == 0 {
 		settings.Title = strings.Replace(settings.Name, "/", " ", -1)
@@ -157,6 +173,7 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	})
 	moduleGroup.GET("/", s.Page)
 	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
+	panel.RouterGroup.GET("/websocket/"+settings.SocketsRouteName+"/:method", s.Websockets)
 	s.Init(settings, panel)
 
 	modulesListMu.Lock()
