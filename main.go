@@ -41,11 +41,18 @@ type (
 	//Panel struct
 	Panel struct {
 		Settings
+		// RootMenu is zerro-level menu
+		RootMenu *Menu
+		// MainMenu is main admin-panel menu
+		MainMenu *Menu
+		// DropMenu is top user dropdown menu
+		DropMenu *Menu
 	}
 )
 
 // Create new panel
 func Create(s Settings) *Panel {
+	rootMenu := &Menu{Title: "[Root]"}
 	panel := Panel{
 		Settings: Settings{
 			Port:           8080,
@@ -65,6 +72,9 @@ func Create(s Settings) *Panel {
 			FirstStart:     func() {},
 			Engine:         gin.New(),
 		},
+		RootMenu: rootMenu,
+		MainMenu: rootMenu.Add("[Main]"),
+		DropMenu: rootMenu.Add("[Drop]"),
 	}
 	// apply default settings
 	extend(&panel.Settings, &s)
@@ -85,8 +95,8 @@ func Create(s Settings) *Panel {
 	}
 	panel.Vars["panelPath"] = panel.Path
 	panel.Vars["title"] = panel.Title
-	panel.Vars["mainMenu"] = &MainMenu
-	panel.Vars["dropMenu"] = &DropMenu
+	panel.Vars["mainMenu"] = panel.MainMenu
+	panel.Vars["dropMenu"] = panel.DropMenu
 
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))

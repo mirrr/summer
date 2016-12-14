@@ -29,15 +29,6 @@ type (
 var (
 	menusList  = []*Menu{}
 	menuListMu = sync.Mutex{}
-
-	// RootMenu is zerro-level menu
-	RootMenu = Menu{Title: "[Root]"}
-
-	// MainMenu is main admin-panel menu
-	MainMenu = RootMenu.Add("[Main]")
-
-	// DropMenu is top user dropdown menu
-	DropMenu = RootMenu.Add("[Drop]")
 )
 
 func (slice menuItems) Len() int {

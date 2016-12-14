@@ -1,7 +1,6 @@
 package summer
 
 import (
-	"fmt"
 	"strings"
 	"sync"
 
@@ -76,12 +75,8 @@ func (m *Module) Ajax(c *gin.Context) {
 
 // Websockets  is default module's websockets method
 func (m *Module) Websockets(c *gin.Context) {
-	fmt.Println("...")
-	fmt.Println(strings.ToLower(c.Param("method")))
-	fmt.Println(m.Settings.Websockets)
 	found := false
 	for websocketsRoute, websocketsFunc := range m.Settings.Websockets {
-		fmt.Println("...", strings.ToLower(c.Param("method")), websocketsRoute)
 		if strings.ToLower(c.Param("method")) == websocketsRoute {
 			handler := websocket.Handler(websocketsFunc)
 			handler.ServeHTTP(c.Writer, c.Request)
