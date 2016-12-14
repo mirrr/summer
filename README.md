@@ -58,12 +58,12 @@ type (
 )
 
 var (
-    subMenu = summer.MainMenu.Add("Submenu", 1)
+    subMenu = panel.MainMenu.Add("Submenu", 1)
     news = panel.AddModule(
         &summer.ModuleSettings{
             Name:         "news",
             Title:        "News",
-            Menu:         subMenu, // or summer.MainMenu
+            Menu:         subMenu, // or panel.MainMenu
             MenuOrder:    1,
             TemplateName: "news/index",
         },
