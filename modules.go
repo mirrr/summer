@@ -14,7 +14,7 @@ type (
 	// Func is alias for map[string]func(c *gin.Context)
 	Func map[string]func(c *gin.Context)
 	// WebFunc is alias for map[string]func(c *websocket.Conn)
-	WebFunc map[string]func(ws *websocket.Conn)
+	WebFunc map[string]func(c *gin.Context, ws *websocket.Conn)
 
 	//Module struct
 	Module struct {
@@ -78,7 +78,9 @@ func (m *Module) Websockets(c *gin.Context) {
 	found := false
 	for websocketsRoute, websocketsFunc := range m.Settings.Websockets {
 		if strings.ToLower(c.Param("method")) == websocketsRoute {
-			handler := websocket.Handler(websocketsFunc)
+			handler := websocket.Handler(func(ws *websocket.Conn) {
+				websocketsFunc(c, ws)
+			})
 			handler.ServeHTTP(c.Writer, c.Request)
 			found = true
 			break

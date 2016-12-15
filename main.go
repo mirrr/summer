@@ -145,10 +145,10 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 		settings.Websockets = WebFunc{}
 		st := reflect.ValueOf(s)
 		for i := 0; i < st.NumMethod(); i++ {
-			if st.Method(i).Type().String() == "func(*websocket.Conn)" {
+			if st.Method(i).Type().String() == "func(*gin.Context, *websocket.Conn)" {
 				name := strings.ToLower(st.Type().Method(i).Name)
 				if name != "ajax" && name != "page" && name != "websockets" {
-					method := st.Method(i).Interface().(func(*websocket.Conn))
+					method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
 					settings.Websockets[name] = method
 				}
 			}
