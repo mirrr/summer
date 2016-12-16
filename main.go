@@ -18,25 +18,27 @@ type (
 
 	// Settings intended for data transmission into the Create method of package
 	Settings struct {
-		Port           uint
-		Title          string
-		AuthSalt       string
-		AuthPrefix     string
-		Path           string // URL path of panel - "/" by default
-		Views          string // file path of ./templates directory
-		ViewsDoT       string // file path of doT.js templates directory
-		Files          string // file path of ./files directory
-		TMPs           string // file path of /tmp directory
-		DBName         string // MongoDB database name
-		DefaultPage    string
-		Language       string
-		UserCollection string
-		Debug          bool
-		Vars           map[string]interface{}
-		TFuncMap       template.FuncMap
-		FirstStart     func()
-		RouterGroup    *gin.RouterGroup
-		Engine         *gin.Engine
+		Port              uint
+		Title             string
+		AuthSalt          string
+		AuthPrefix        string
+		Path              string // URL path of panel - "/" by default
+		Views             string // file path of ./templates directory
+		ViewsDoT          string // file path of doT.js templates directory
+		Files             string // file path of ./files directory
+		TMPs              string // file path of /tmp directory
+		DBName            string // MongoDB database name
+		DefaultPage       string
+		Language          string
+		UserCollection    string
+		Debug             bool
+		Vars              map[string]interface{}
+		TFuncMap          template.FuncMap
+		FirstStart        func()
+		RouterGroup       *gin.RouterGroup
+		Engine            *gin.Engine
+		DisableAuth       bool // if TRUE - without summer auth
+		DisableFirstStart bool // if TRUE - without first user creating
 	}
 
 	//Panel struct

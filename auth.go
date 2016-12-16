@@ -39,9 +39,19 @@ func (a *authAdmins) Init(panel *Panel) {
 }
 
 func (a *authAdmins) Auth(g *gin.RouterGroup) {
-	g.Use(a.Login(g.BasePath()))
-	g.POST("/z-auth", dummy) // хак для авторизации
-	g.POST("/z-register", dummy)
+	if !a.DisableAuth {
+		g.Use(a.Login(g.BasePath()))
+		g.POST("/z-auth", dummy) // хак для авторизации
+		g.POST("/z-register", dummy)
+	} else {
+		g.Use(func(c *gin.Context) {
+			c.Set("user", UsersStruct{
+				Name:  "Demo",
+				Login: "Demo",
+			})
+			c.Next()
+		})
+	}
 	g.GET("/logout", a.Logout(g.BasePath()))
 }
 
@@ -69,7 +79,7 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 		}
 
 		// 	регистрация первого пользователя админки
-		if len(adminsArr) == 0 {
+		if len(adminsArr) == 0 && !a.DisableFirstStart {
 			defer c.Abort()
 			login, e1 := c.GetPostForm("admin-z-login")
 			password, e2 := c.GetPostForm("admin-z-password")
@@ -86,16 +96,17 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 							Name:     "Admin",
 							Root:     true,
 						}); err != nil {
-							c.String(400, "Ошибка БД")
+							c.String(400, "DB Error")
 							return
 						}
+
 						a.FirstStart()
 						c.String(200, "Ok")
 					} else {
-						c.String(400, "Логин или пароль слишком коротки!")
+						c.String(400, "Login or password is too short!")
 					}
 				} else {
-					c.String(400, "Пароли не совпадают!")
+					c.String(400, "Passwords do not match!")
 				}
 				return
 			}
