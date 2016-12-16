@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/mirrr/mgo-wrapper"
-	"golang.org/x/net/websocket"
 	"gopkg.in/mgo.v2"
 )
 
@@ -55,41 +55,35 @@ type (
 var (
 	modulesList   = map[string]Simple{}
 	modulesListMu = sync.Mutex{}
+	wsupgrader    = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+	}
 )
 
 // Ajax  is default module's ajax method
 func (m *Module) Ajax(c *gin.Context) {
-	found := false
 	for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
 		if strings.ToLower(c.Param("method")) == ajaxRoute {
 			ajaxFunc(c)
-			found = true
-			break
+			return
 		}
 	}
-
-	if !found {
-		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
-	}
+	c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
 }
 
 // Websockets  is default module's websockets method
 func (m *Module) Websockets(c *gin.Context) {
-	found := false
 	for websocketsRoute, websocketsFunc := range m.Settings.Websockets {
 		if strings.ToLower(c.Param("method")) == websocketsRoute {
-			handler := websocket.Handler(func(ws *websocket.Conn) {
-				websocketsFunc(c, ws)
-			})
-			handler.ServeHTTP(c.Writer, c.Request)
-			found = true
+			if conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil); err == nil {
+				websocketsFunc(c, conn)
+				return
+			}
 			break
 		}
 	}
-
-	if !found {
-		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
-	}
+	c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
 }
 
 // Page is default module's page rendering method

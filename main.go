@@ -8,9 +8,9 @@ import (
 	"ttpl"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
-	"golang.org/x/net/websocket"
 	"gopkg.in/mirrr/types.v1"
 )
 
@@ -31,6 +31,7 @@ type (
 		DefaultPage    string
 		Language       string
 		UserCollection string
+		Debug          bool
 		Vars           map[string]interface{}
 		TFuncMap       template.FuncMap
 		FirstStart     func()
@@ -52,6 +53,14 @@ type (
 
 // Create new panel
 func Create(s Settings) *Panel {
+	var engine *gin.Engine
+	if s.Debug {
+		gin.SetMode(gin.DebugMode)
+		engine = gin.Default()
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+		engine = gin.New()
+	}
 	rootMenu := &Menu{Title: "[Root]"}
 	panel := Panel{
 		Settings: Settings{
@@ -70,7 +79,7 @@ func Create(s Settings) *Panel {
 			UserCollection: "admins",
 			Vars:           map[string]interface{}{},
 			FirstStart:     func() {},
-			Engine:         gin.New(),
+			Engine:         engine,
 		},
 		RootMenu: rootMenu,
 		MainMenu: rootMenu.Add("[Main]"),
@@ -130,24 +139,20 @@ func Create(s Settings) *Panel {
 func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	if settings.Ajax == nil {
 		settings.Ajax = Func{}
-		st := reflect.ValueOf(s)
-		for i := 0; i < st.NumMethod(); i++ {
-			if st.Method(i).Type().String() == "func(*gin.Context)" {
-				name := strings.ToLower(st.Type().Method(i).Name)
-				if name != "ajax" && name != "page" && name != "websockets" {
-					method := st.Method(i).Interface().(func(*gin.Context))
-					settings.Ajax[name] = method
-				}
-			}
-		}
 	}
 	if settings.Websockets == nil {
 		settings.Websockets = WebFunc{}
-		st := reflect.ValueOf(s)
-		for i := 0; i < st.NumMethod(); i++ {
-			if st.Method(i).Type().String() == "func(*gin.Context, *websocket.Conn)" {
-				name := strings.ToLower(st.Type().Method(i).Name)
-				if name != "ajax" && name != "page" && name != "websockets" {
+	}
+	st := reflect.ValueOf(s)
+	for i := 0; i < st.NumMethod(); i++ {
+		method := st.Method(i).Type().String()
+		if len(method) > 17 && method[:17] == "func(*gin.Context" {
+			name := strings.ToLower(st.Type().Method(i).Name)
+			if name != "ajax" && name != "page" && name != "websockets" {
+				if method == "func(*gin.Context)" {
+					method := st.Method(i).Interface().(func(*gin.Context))
+					settings.Ajax[name] = method
+				} else if method == "func(*gin.Context, *websocket.Conn)" {
 					method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
 					settings.Websockets[name] = method
 				}
