@@ -7,10 +7,10 @@ import (
 	"time"
 	"ttpl"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
+	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mirrr/types.v1"
 )
 

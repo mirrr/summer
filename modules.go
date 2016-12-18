@@ -4,9 +4,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mirrr/mgo-wrapper"
+	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 )
 

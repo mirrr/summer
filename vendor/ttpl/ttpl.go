@@ -2,8 +2,8 @@ package ttpl
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/render"
+	"gopkg.in/gin-gonic/gin.v1"
 	"io/ioutil"
 	"net/http"
 	"os"

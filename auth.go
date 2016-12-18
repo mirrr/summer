@@ -2,9 +2,9 @@ package summer
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/mirrr/mgo-ai"
 	"github.com/mirrr/mgo-wrapper"
+	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"net/http"
 	"time"
