@@ -4,7 +4,7 @@ Simple control panel for [Golang](https://golang.org/) based on [Gin framework](
 
 ## How To Install   
 ```bash
-go get gopkg.in/mirrr/summer.v1
+go get gopkg.in/night-codes/summer.v1
 ```
 
 
@@ -14,7 +14,7 @@ go get gopkg.in/mirrr/summer.v1
 package main
 
 import (
-    "gopkg.in/mirrr/summer.v1"
+    "gopkg.in/night-codes/summer.v1"
 )
 
 var (
@@ -46,7 +46,7 @@ package main
 
 import (
     "gopkg.in/gin-gonic/gin.v1"
-    "gopkg.in/mirrr/summer.v1"
+    "gopkg.in/night-codes/summer.v1"
 )
 
 type (
@@ -105,7 +105,7 @@ Coming soon...
    
 ## People
 
-Author and developer is [Oleksiy Chechel](https://github.com/mirrr)    
+Author and developer is [Oleksiy Chechel](https://github.com/night-codes)    
    
 
 
