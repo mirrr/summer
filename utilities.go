@@ -3,10 +3,6 @@ package summer
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mirrr/govalidator"
-	"golang.org/x/crypto/sha3"
-	"gopkg.in/gin-gonic/gin.v1"
-	"gopkg.in/gin-gonic/gin.v1/binding"
 	"io"
 	"net/http"
 	"os"
@@ -15,6 +11,11 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/night-codes/govalidator"
+	"golang.org/x/crypto/sha3"
+	"gopkg.in/gin-gonic/gin.v1"
+	"gopkg.in/gin-gonic/gin.v1/binding"
 )
 
 var (

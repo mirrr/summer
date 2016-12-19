@@ -8,10 +8,10 @@ import (
 	"ttpl"
 
 	"github.com/gorilla/websocket"
-	"github.com/mirrr/mgo-ai"
-	"github.com/mirrr/mgo-wrapper"
+	"github.com/night-codes/mgo-ai"
+	"github.com/night-codes/mgo-wrapper"
 	"gopkg.in/gin-gonic/gin.v1"
-	"gopkg.in/mirrr/types.v1"
+	"gopkg.in/night-codes/types.v1"
 )
 
 type (
