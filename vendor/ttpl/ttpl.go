@@ -36,7 +36,6 @@ var (
 
 func init() {
 	if os.Getenv("ENV") == "development" {
-		fmt.Println("Init templates cleanup")
 		go func() {
 			for range time.Tick(time.Second) {
 				func() {
