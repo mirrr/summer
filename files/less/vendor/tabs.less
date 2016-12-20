@@ -11,40 +11,105 @@ div.tabs {
 	height: 100%;
 }
 
-div.tabs>* {
-	display: inline-block;
-	padding: 0.5em 0.7em;
-	margin: 0px;
-	cursor: pointer;
-	color: #777777;
-	font-style: normal;
-	text-decoration: none;
-	background: #f7f7f7;
-	border: none;
-	margin-right: 0.2rem;
-	.border-radius(3px)
+div.tabs {
+	&>* {
+		display: inline-block;
+		padding: 0.5em 0.7em;
+		margin: 0px;
+		cursor: pointer;
+		color: #777777;
+		font-style: normal;
+		text-decoration: none;
+		background: #f7f7f7;
+		border: none;
+		margin-right: 0.2rem;
+		.border-radius(3px)
+	}
+	&>*.active {
+		.gradient (desaturate(lighten(@active-tab-bgcolor, 5%), 5%), @active-tab-bgcolor);
+		// background: @active-tab-bgcolor url("/files/images/tabs.png") repeat left center;
+		color: contrast(@active-tab-bgcolor, #666666);
+		text-decoration: none;
+		.box-shadow(inset 0px -35px 24px -25px rgba(0, 0, 0, 0.05));
+		.text-shadow(0 -1px 0 rgba(0, 0, 0, 0.18))
+	}
+	&>*>span, &>*.active:hover>span, &>*.locked:hover>span {
+		border-bottom: solid 2px transparent;
+	}
+	&>*.locked {
+		color: #999999 !important;
+		cursor: default;
+	}
+	&>*:hover>span {
+		border-bottom: solid 2px #777777;
+	}
+	&>*>span.fa:before {
+		padding-right: 0.25em;
+	}
 }
 
-div.tabs>*.active {
-	.gradient (desaturate(lighten(@active-tab-bgcolor, 5%), 5%), @active-tab-bgcolor);
-	// background: @active-tab-bgcolor url("/files/images/tabs.png") repeat left center;
-	color: contrast(@active-tab-bgcolor, #666666);
-	text-decoration: none;
-	.box-shadow(inset 0px -35px 24px -25px rgba(0, 0, 0, 0.05));
-	.text-shadow(0 -1px 0 rgba(0, 0, 0, 0.18))
+// Navbar tabs
+div#navbar-tabs {
+	z-index: 2;
+	position: relative;
+	margin-top: 0.7rem;
+	table {
+		background: transparent;
+		border-collapse: collapse !important;
+		border: none !important;
+		width: 100%;
+		tr, td {
+			border: none !important;
+			background: transparent !important;
+			text-align: right;
+			vertical-align: middle;
+			padding: 0.7rem 0;
+		}
+		td#navbar-tabs-content {
+			text-align: left;
+			vertical-align: bottom;
+			padding-bottom: 0 !important;
+		}
+	}
 }
 
-div.tabs>*>span, div.tabs>*.active:hover>span, div.tabs>*.locked:hover>span {
-	border-bottom: solid 2px transparent;
-}
-
-div.tabs>*.locked {
-	color: #999999 !important;
-	cursor: default;
-}
-
-div.tabs>*:hover>span {
-	border-bottom: solid 2px #777777;
+td#navbar-tabs-content {
+	&>* {
+		display: inline-block;
+		padding: 0.5rem 0.6rem;
+		margin: 0px;
+		cursor: pointer;
+		color: #777777;
+		font-style: normal;
+		text-decoration: none;
+		background: #dddddd;
+		border: none;
+		margin-right: 0.3rem;
+		.border-radius(3px 3px 0px 0px);
+		font-size: 1.1rem;
+	}
+	&>*.active {
+		background: #ffffff;
+		// background: @active-tab-bgcolor url("/files/images/tabs.png") repeat left center;
+		color: #444444;
+		text-decoration: none;
+		.opacity(1);
+		.box-shadow(0px -1px 5px 0px rgba(0, 0, 0, 0.04));
+		// .text-shadow(0 -1px 0 rgba(0, 0, 0, 0.18))
+	}
+	&>*>span, &>*.active:hover>span, &>*.locked:hover>span {
+		border-bottom: solid 2px transparent;
+	}
+	&>*.locked {
+		color: #999999 !important;
+		cursor: default;
+	}
+	&>*:hover>span {
+		border-bottom: solid 2px #777777;
+	}
+	&>*>span.fa:before {
+		padding-right: 0.25em;
+	}
 }
 
 div.tabs-content {
@@ -54,8 +119,4 @@ div.tabs-content {
 
 div.tabs-content.active {
 	display: block;
-}
-
-div.tabs>*>span.fa:before {
-	padding-right: 0.25em;
 }
