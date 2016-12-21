@@ -43,6 +43,7 @@ type (
 		Websockets       WebFunc
 		Icon             string
 		GroupTo          Simple
+		GroupTitle       string
 	}
 
 	// Simple module interface
@@ -153,6 +154,9 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 	}
 	if len(settings.MenuTitle) == 0 {
 		settings.MenuTitle = settings.Title
+	}
+	if len(settings.GroupTitle) == 0 {
+		settings.GroupTitle = settings.MenuTitle
 	}
 	if len(settings.CollectionName) == 0 {
 		settings.CollectionName = strings.Replace(settings.Name, "/", "-", -1)

@@ -47,7 +47,7 @@ func getTabs(name string) interface{} {
 		if module.GetSettings().GroupTo == parent {
 			tabsList = append(tabsList, &tab{
 				Order:  module.GetSettings().MenuOrder,
-				Title:  module.GetSettings().MenuTitle,
+				Title:  module.GetSettings().GroupTitle,
 				Link:   "/" + module.GetSettings().PageRouteName + "/",
 				Active: module == current,
 			})
@@ -58,7 +58,7 @@ func getTabs(name string) interface{} {
 	if len(tabsList) > 0 {
 		tabsList = append(tabs{&tab{
 			Order:  parent.GetSettings().MenuOrder,
-			Title:  parent.GetSettings().MenuTitle,
+			Title:  parent.GetSettings().GroupTitle,
 			Link:   "/" + parent.GetSettings().PageRouteName + "/",
 			Active: parent == current,
 		}}, tabsList...)
