@@ -167,6 +167,9 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		c.Header("Login", c.MustGet("login").(string))
 		c.Header("Title", settings.Title)
 		c.Header("Path", panel.Path)
+		header := c.Writer.Header()
+		header["Css"] = panel.CSS
+		header["Js"] = panel.JS
 	})
 	moduleGroup.GET("/", s.Page)
 	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)

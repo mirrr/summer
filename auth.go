@@ -36,7 +36,7 @@ var (
 
 func (a *authAdmins) Init(panel *Panel) {
 	a.Panel = *panel
-	a.collection = mongo.DB(panel.DBName).C(a.Panel.UserCollection)
+	a.collection = mongo.DB(panel.DBName).C(a.Panel.UsersCollection)
 }
 
 func (a *authAdmins) Auth(g *gin.RouterGroup) {

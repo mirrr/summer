@@ -58,34 +58,25 @@
 			$("#right-panel").append($link);
 			return $link;
 		};
-		$.tools.addSearch = function (obj) {
-			if ($('#right-panel .search').length === 0) {
-				obj = obj || {};
-				obj.class = 'search hidden';
-				obj.type = 'text';
-				var $search = $('<input/>', obj);
-				$("#right-panel").append($search);
 
-				var $allsearch = $('input[type=text].allsearch');
-				if ($allsearch.length) {
-					$allsearch.show();
-					$allsearch.on('keyup', function (e) {
-						$search.val($allsearch.val());
-						var event = new Event('keyup');
-						event.keyCode = e.originalEvent.keyCode;
-						event.keyIdentifier = e.originalEvent.keyIdentifier;
-						event.charCode = e.originalEvent.charCode;
-						event.code = e.originalEvent.code;
-						event.which = e.originalEvent.which;
-						$search.get(0).dispatchEvent(event);
-					});
-					$allsearch.on('input', function () {
-						$search.val($allsearch.val());
-						var event = new Event('input');
-						$search.get(0).dispatchEvent(event);
-					});
-				}
+		var oldText = "";
+		var timerId = null;
+		$.tools.searcher = function (onChange) {
+			var $search = $('input[type=text].allsearch');
+			if ($search.length && !$search.is(":visible")) {
+				$search.show();
+				$search.on('keyup', function (e) {
+					if (oldText !== $search.val()) {
+						if (timerId) {
+							clearTimeout(timerId);
+							timerId = null;
+						}
+						timerId = setTimeout(function () {
+							onChange($search.val());
+						}, 300);
+						oldText = $search.val();
+					}
+				});
 			}
-			return $search;
 		}
 	}));

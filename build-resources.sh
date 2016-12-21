@@ -28,6 +28,7 @@ compile=$(echo "${vendor}/jquery-2.2.4.js" \
 compileLogin=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/jquery.easing.1.3.min.js" \
 "${vendor}/jquery.message.js" \
+"${vendor}/jquery.tools.js" \
 "${vendor}/jquery.ajaxHelper.js")
 
 uglifyjs --source-map "${build}/main.js.map" --source-map-root "/" --source-map-url "/${build}/main.js.map" -o "${build}/main.js" $compile "files/js/common.js"

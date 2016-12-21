@@ -19,6 +19,9 @@
 			window.ajaxUrl = '{{.Path}}/ajax/{{.Module}}/';
 		</script>
 		<script type="text/javascript" src="{{.Path}}/pkgFiles/build/main.js"></script>
+		{{range .Js}}<script type="text/javascript" src="{{.}}"></script>{{end}}
+		{{range .Css}}<link rel="stylesheet" href="{{.}}">{{end}}
+
 		<style>
 			.w-title:before {background-image: url("{{.Path}}/pkgFiles/images/title.png");}
 			@media (min-width:1010px) {.navbar-default {background-image: url("{{.Path}}/pkgFiles/images/title.png");}}

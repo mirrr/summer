@@ -61,10 +61,14 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	if val := header["Content-Type"]; len(val) == 0 {
 		header["Content-Type"] = []string{"text/html; charset=utf-8"}
 	}
-	site := map[string]string{"Title": "", "Login": "", "Module": "", "Path": ""}
+	site := map[string]interface{}{"Title": "", "Login": "", "Module": "", "Path": "", "Js": []string{}, "Css": []string{}}
 	for k, _ := range site {
-		if val := header[k]; len(val) != 0 {
+		if val := header[k]; len(val) == 1 {
 			site[k] = header[k][0]
+			header[k] = []string{}
+		} else if len(val) > 1 {
+			site[k] = header[k]
+			header[k] = []string{}
 		}
 	}
 	data := map[string]interface{}{"data": r.Data, "site": site}
@@ -113,7 +117,6 @@ func Use(r *gin.Engine, pathes []string, dotPath string, funcMap ...template.Fun
 	}
 
 	funcMap[0]["dot"] = dot(dotPath)
-
 	t = t.Funcs(funcMap[0])
 
 	for _, path := range pathes {
