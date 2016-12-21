@@ -46,10 +46,8 @@ func (a *authAdmins) Auth(g *gin.RouterGroup) {
 		g.POST("/z-register", dummy)
 	} else {
 		g.Use(func(c *gin.Context) {
-			c.Set("user", UsersStruct{
-				Name:  "Demo",
-				Login: "Demo",
-			})
+			c.Set("user", UsersStruct{})
+			c.Set("login", "")
 			c.Next()
 		})
 	}
@@ -137,6 +135,7 @@ func (a *authAdmins) Login(panelPath string) gin.HandlerFunc {
 			if e1 == nil && e2 == nil {
 				if user, exists := adminsArr[login]; exists && hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
 					c.Set("user", user)
+					c.Set("login", user.Login)
 					c.Next()
 					return
 				}

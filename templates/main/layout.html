@@ -1,4 +1,5 @@
 {{ define "header" }}
+{{ $tabs := tabs (.Module)}}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -8,23 +9,47 @@
 		<meta name="HandheldFriendly" content="true"/>
 		<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=0.8, user-scalable=no">
 		<meta name="theme-color" content="#354463">
-		<link rel="shortcut icon" href="{{var "panelPath"}}/pkgFiles/favicon.ico">
-		<link rel="icon" sizes="192x192" href="{{var "panelPath"}}/pkgFiles/favicon192x192.png">
-		<title>{{.title}}</title>
-		<link rel="stylesheet" href="{{var "panelPath"}}/pkgFiles/build/style.css">
-		<script type="text/javascript"> window.panelBasePath="{{var "panelPath"}}";</script>
-		<script type="text/javascript"> window.moduleName="{{var "moduleName"}}";</script>
-		<script type="text/javascript" src="{{var "panelPath"}}/pkgFiles/build/main.js"></script>
+		<link rel="shortcut icon" href="{{.Path}}/pkgFiles/favicon.ico">
+		<link rel="icon" sizes="192x192" href="{{.Path}}/pkgFiles/favicon192x192.png">
+		<title>{{$tabs.title}}{{if not (eq .Title $tabs.title)}} - {{.Title}}{{end}}</title>
+		<link rel="stylesheet" href="{{.Path}}/pkgFiles/build/style.css">
+		<script type="text/javascript">
+			window.panelPath="{{.Path}}";
+			window.moduleName="{{.Module}}";
+			window.ajaxUrl = '{{.Path}}/ajax/{{.Module}}/';
+		</script>
+		<script type="text/javascript" src="{{.Path}}/pkgFiles/build/main.js"></script>
 		<style>
-			.w-title:before {background-image: url("{{var "panelPath"}}/pkgFiles/images/title.png");}
-			@media (min-width:1010px) {.navbar-default {background-image: url("{{var "panelPath"}}/pkgFiles/images/title.png");}}
-			.w-wrap {background-image: url("{{var "panelPath"}}/pkgFiles/images/bg.png");}
+			.w-title:before {background-image: url("{{.Path}}/pkgFiles/images/title.png");}
+			@media (min-width:1010px) {.navbar-default {background-image: url("{{.Path}}/pkgFiles/images/title.png");}}
+			.w-wrap {background-image: url("{{.Path}}/pkgFiles/images/bg.png");}
 		</style>
 	</head>
 
 	<body>
 		<div id="all">
 			{{template "menu" .}}
+			<div>
+				<div id="summer-progress"><div></div></div>
+				<div class="container" id="navbar-tabs">
+					<table>
+						<tr>
+							<td id="navbar-tabs-title">
+								<h2 style="padding: 0">{{if $tabs.icon}}<i class="fa fa-{{$tabs.icon}} fa-lg" aria-hidden="true"></i>{{end}}{{$tabs.title}}{{if not (eq .Title $tabs.title)}} <i class="fa fa-angle-double-right" aria-hidden="true"></i> {{.Title}}{{end}}</h2>
+							</td>
+							<td id="right-panel" rowspan="2">
+							</td>
+						</tr>
+						<tr>
+							<td id="navbar-tabs-content" class="unselectable">
+								{{ range $tabs.list }}
+								<a href="{{var "path"}}{{ .Link }}" class="{{if .Active}}active{{end}}">{{.Title}}</a>
+								{{ end }}
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
 			<div class="container" id="content">
 {{ end }}
 
@@ -37,7 +62,7 @@
 			</div>
 			<footer>
 				<div class="container">
-					© 2015-2017 <a style="color: #444444" href="https://github.com/night-codes/summer"><b>Summer</b></a>
+					© 2015-2017 <a style="color: #444444" href="https://github.com/night-codes/summer"><b>Summer panel</b></a>
 				</div>
 			</footer>
 		</div>
@@ -46,6 +71,8 @@
 	</body>
 </html>
 {{ end }}
+
+
 
 {{ define "menu"}}
 	<div class="navbar navbar-default navbar-static-top" role="navigation">
@@ -58,7 +85,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="{{var "panelPath"}}"><span class="fa fa-books"> </span> </a>
+				<a class="navbar-brand" href="{{var "path"}}"><span class="fa fa-books"> </span> </a>
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
@@ -68,12 +95,12 @@
 					<li>
 						<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
 					</li>
-					<li class="dropdown {{if .active.admins}}active{{end}}">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.user.Name}} <b class="caret"></b></a>
+					<li class="dropdown {{if false}}active{{end}}">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.Login}} <b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							{{range menu (var "dropMenu")}}{{if not .SubMenu }}{{template "menuItem" .}}{{end}}{{end}}
 							<li class="divider"></li>
-							<li><a href="{{var "panelPath"}}/logout">Logout</a></li>
+							<li><a href="{{var "path"}}/logout">Logout</a></li>
 						</ul>
 					</li>
 				</ul>
@@ -84,7 +111,7 @@
 
 {{ define "menuItem" }}
 	<li class="">
-		<a href="{{var "panelPath"}}{{ .Link }}">{{ .Title }}</a>
+		<a href="{{var "path"}}{{ .Link }}">{{ .Title }}</a>
 	</li>
 {{end}}
 

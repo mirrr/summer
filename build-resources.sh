@@ -13,6 +13,7 @@ compile=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/jquery.switch.js" \
 "${vendor}/jquery.tabs.js" \
 "${vendor}/jquery.message.js" \
+"${vendor}/jquery.tools.js" \
 "${vendor}/redactor.js" \
 "${vendor}/jquery.shwark.js" \
 "${vendor}/jquery.cookie.js" \

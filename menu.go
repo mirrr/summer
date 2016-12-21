@@ -79,7 +79,7 @@ func getMenuItems(m *Menu) interface{} {
 	menuListMu.Unlock()
 	modulesListMu.Lock()
 	for _, module := range modulesList {
-		if module.GetSettings().Menu != nil && module.GetSettings().Menu == m {
+		if module.GetSettings().Menu == m {
 			menuItemsList = append(menuItemsList, &menuItem{
 				Order:   module.GetSettings().MenuOrder,
 				Title:   module.GetSettings().MenuTitle,

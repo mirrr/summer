@@ -61,13 +61,20 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	if val := header["Content-Type"]; len(val) == 0 {
 		header["Content-Type"] = []string{"text/html; charset=utf-8"}
 	}
+	site := map[string]string{"Title": "", "Login": "", "Module": "", "Path": ""}
+	for k, _ := range site {
+		if val := header[k]; len(val) != 0 {
+			site[k] = header[k][0]
+		}
+	}
+	data := map[string]interface{}{"data": r.Data, "site": site}
 
 	if len(r.Name) > 0 {
-		if err := r.Template.ExecuteTemplate(w, r.Name, r.Data); err != nil {
+		if err := r.Template.ExecuteTemplate(w, r.Name, data); err != nil {
 			fmt.Println("Template err: ", err.Error())
 		}
 	} else {
-		if err := r.Template.Execute(w, r.Data); err != nil {
+		if err := r.Template.Execute(w, data); err != nil {
 			fmt.Println("Template err: ", err.Error())
 		}
 	}
@@ -159,7 +166,7 @@ func parseFiles(t *template.Template, dotPath string, path string, filenames ...
 		}
 
 		if name != "layout.html" && name != "login.html" && name != "firstStart.html" {
-			s = `{{template "header" .}}` + s + `{{template "footer" .}}`
+			s = `{{template "header" .site}}{{with .data}} ` + s + ` {{end}}{{template "footer" .site}}`
 		}
 
 		var tmpl *template.Template

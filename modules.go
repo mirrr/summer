@@ -1,6 +1,7 @@
 package summer
 
 import (
+	"reflect"
 	"strings"
 	"sync"
 
@@ -40,6 +41,8 @@ type (
 		AllowUsers       []uint64
 		Ajax             Func
 		Websockets       WebFunc
+		Icon             string
+		GroupTo          Simple
 	}
 
 	// Simple module interface
@@ -88,10 +91,7 @@ func (m *Module) Websockets(c *gin.Context) {
 
 // Page is default module's page rendering method
 func (m *Module) Page(c *gin.Context) {
-	c.HTML(200, m.Settings.TemplateName+".html", gin.H{
-		"title": m.Settings.Title,
-		"user":  c.MustGet("user"),
-	})
+	c.HTML(200, m.Settings.TemplateName+".html", obj{"title": m.Settings.Title})
 }
 
 // Init is default module's initial method
@@ -106,4 +106,75 @@ func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
 // GetSettings needs for correct settings getting from module struct
 func (m *Module) GetSettings() *ModuleSettings {
 	return m.Settings
+}
+
+// Create new module
+func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
+
+	modulesListMu.Lock()
+	if settings.Name == "" || modulesList[settings.Name] != nil {
+		panic(`Repeated use of module name "` + settings.Name + `"`)
+	}
+	modulesListMu.Unlock()
+	if settings.Ajax == nil {
+		settings.Ajax = Func{}
+	}
+	if settings.Websockets == nil {
+		settings.Websockets = WebFunc{}
+	}
+	st := reflect.ValueOf(s)
+	for i := 0; i < st.NumMethod(); i++ {
+		method := st.Method(i).Type().String()
+		if len(method) > 17 && method[:17] == "func(*gin.Context" {
+			name := strings.ToLower(st.Type().Method(i).Name)
+			if name != "ajax" && name != "page" && name != "websockets" {
+				if method == "func(*gin.Context)" {
+					method := st.Method(i).Interface().(func(*gin.Context))
+					settings.Ajax[name] = method
+				} else if method == "func(*gin.Context, *websocket.Conn)" {
+					method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
+					settings.Websockets[name] = method
+				}
+			}
+		}
+	}
+	// default settings for some fields
+	if len(settings.PageRouteName) == 0 {
+		settings.PageRouteName = settings.Name
+	}
+	if len(settings.AjaxRouteName) == 0 {
+		settings.AjaxRouteName = settings.PageRouteName
+	}
+	if len(settings.SocketsRouteName) == 0 {
+		settings.SocketsRouteName = settings.PageRouteName
+	}
+	if len(settings.Title) == 0 {
+		settings.Title = strings.Replace(settings.Name, "/", " ", -1)
+	}
+	if len(settings.MenuTitle) == 0 {
+		settings.MenuTitle = settings.Title
+	}
+	if len(settings.CollectionName) == 0 {
+		settings.CollectionName = strings.Replace(settings.Name, "/", "-", -1)
+	}
+	if len(settings.TemplateName) == 0 {
+		settings.TemplateName = strings.Replace(settings.Name, "/", "-", -1)
+	}
+
+	moduleGroup := panel.RouterGroup.Group(settings.PageRouteName)
+	moduleGroup.Use(func(c *gin.Context) {
+		c.Header("Module", settings.PageRouteName)
+		c.Header("Login", c.MustGet("login").(string))
+		c.Header("Title", settings.Title)
+		c.Header("Path", panel.Path)
+	})
+	moduleGroup.GET("/", s.Page)
+	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
+	panel.RouterGroup.GET("/websocket/"+settings.SocketsRouteName+"/:method", s.Websockets)
+	s.Init(settings, panel)
+
+	modulesListMu.Lock()
+	modulesList[settings.Name] = s
+	modulesListMu.Unlock()
+	return s
 }

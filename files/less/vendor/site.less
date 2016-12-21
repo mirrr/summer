@@ -7,12 +7,26 @@ body, html {
 }
 
 #content {
+	padding-top: 1.8rem;
 	padding-bottom: 3.5rem;
 	background: #ffffff;
 	border-radius: 0.3em;
 	.box-shadow(0 0 5px 1px rgba(0, 0, 0, 0.05));
 	z-index: 1;
 	position: relative;
+}
+
+#summer-progress {
+	height: 3px;
+	text-align: left;
+	overflow: hidden;
+	position: relative;
+}
+
+#summer-progress>div {
+	width: 0px;
+	height: 3px;
+	.horizontal-gradient (@progress-color, @progress-color2);
 }
 
 .right-panel {

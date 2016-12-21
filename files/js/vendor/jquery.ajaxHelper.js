@@ -60,12 +60,14 @@
 			});
 
 			settings.ok = function () {
+				$.progress.start();
 				$.ajax({
 					url: settings.url,
 					type: settings.method,
 					data: data,
 					timeout: settings.timeout,
 					success: function (result) {
+						$.progress.stop();
 						if (settings.success(result)) {
 							$.wbox.close();
 						}
@@ -73,6 +75,7 @@
 						settings.after(result);
 					},
 					error: function (result) {
+						$.progress.stop();
 						settings.error(result);
 						settings.after(result);
 					}
@@ -178,12 +181,14 @@
 				id: id
 			}, settings.data);
 			settings.ok = function () {
+				$.progress.start();
 				$.ajax({
 					url: settings.url,
 					type: settings.method,
 					data: data,
 					timeout: settings.timeout,
 					success: function (result) {
+						$.progress.stop();
 						if (settings.success(result, $this, settings, sel) || settings.remove) {
 							sel.hide().remove();
 						}
@@ -191,6 +196,7 @@
 						settings.after(result);
 					},
 					error: function (result) {
+						$.progress.stop();
 						settings.error(result, $this, settings);
 						settings.after(result);
 					}
@@ -263,12 +269,14 @@
 			options.url = (window.baseUrl ? window.baseUrl + '/' : '') + options.target;
 		}
 
+		$.progress.start();
 		$.ajax({
 			url: options.url,
 			type: options.method,
 			data: options.data,
 			timeout: options.timeout,
 			success: function (result) {
+				$.progress.stop();
 				empty = false;
 				if (Array.isArray(result.data) && result.data.length) {
 					$this.tpl(options.itemTpl, result.data);
@@ -292,6 +300,7 @@
 				options.after(result);
 			},
 			error: function (result) {
+				$.progress.stop();
 				if (options.noitemsTpl) {
 					$this.tpl(options.noitemsTpl);
 				}
