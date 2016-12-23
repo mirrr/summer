@@ -11,9 +11,7 @@ import (
 	"gopkg.in/night-codes/summer.v1"{{if .Vendor}}
 
 	/* modules */
-	"hello"{{end}}{{if and .Demo .Vendor}}
-	"admins"
-	"news"{{end}}
+	"hello"{{end}}
 )
 
 type (
@@ -25,7 +23,7 @@ var (
 	panel = summer.Create(summer.Settings{
 		Title:       "{{.Title}}",
 		Port:        {{.Port}},
-		DefaultPage: "admins",
+		DefaultPage: "hello",
 		Path:        "{{.Path}}", // application path
 		DBName:      "{{.DBName}}",
 		Views:       "{{.Views}}",
@@ -39,9 +37,6 @@ var (
 	}){{if .Vendor}}
 
 	helloModule  = hello.New(panel)
-	{{end}}{{if and .Demo .Vendor}}
-	adminsModule  = admins.New(panel)
-	newsModule  = news.New(panel)
 	{{end}}
 )
 

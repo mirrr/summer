@@ -53,10 +53,12 @@
 	background-position: -3px left;
 	background-repeat: repeat-x;
 	overflow: hidden;
-}
-
-.w-content input, textarea {
-	.border-radius(3px);
+	input, textarea {
+		.border-radius(3px);
+	}
+	.h1, .h2, .h3, h1, h2, h3 {
+		font-weight: bold;
+	}
 }
 
 .w-content-body {
@@ -97,16 +99,15 @@
 }
 
 .w-close {
-	color: white;
 	position: absolute;
-	top: 13px;
-	right: 13px;
-	font-size: 25px;
+	top: 0.4em;
+	right: 0.5em;
+	font-size: 1.5rem;
 	cursor: pointer;
-	height: 22px;
-	width: 22px;
-	opacity: 0.7;
-	color: #ffffff;
+	height: 1em;
+	width: 1em;
+	opacity: .7;
+	color: #fff;
 	z-index: 10;
 }
 
@@ -147,16 +148,21 @@
 	padding: 1.4em 25px;
 	margin: 70px -25px -20px !important;
 	position: relative;
+	text-align: right;
+	button[type=cancel] {
+		background-color: @button-red-bgcolor;
+		.gradient (desaturate(lighten(@button-red-bgcolor, 5%), 5%), @button-red-bgcolor);
+	}
 }
 
-.w-content .form-footer:before {
-	content: "* Поля, обязательные для заполнения";
+.w-content .form-footer.required:before {
+	content: "* required fields";
 	position: absolute;
 	top: -36px;
 	color: #bbbbbb;
 	font-style: italic;
 	font-size: 0.8rem;
-	text-align: right;
+	text-align: left;
 }
 
 .w-content .form-footer label {

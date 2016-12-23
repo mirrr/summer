@@ -2,16 +2,22 @@ td#right-panel {
 	padding: 0.8rem 0 1.1rem !important;
 	&>a, &>button {
 		.border-radius(3px);
-		.gradient (desaturate(lighten(@button-bgcolor, 5%), 5%), @button-bgcolor);
+		background-color: @button-green-bgcolor;
+		.gradient (desaturate(lighten(@button-green-bgcolor, 5%), 5%), @button-green-bgcolor);
 		border: none;
-		color: contrast(@button-bgcolor, #333);
+		color: contrast(@button-green-bgcolor, #999999);
 		cursor: pointer;
 		display: inline-block;
+		font-size: 1rem;
 		font-style: normal;
-		margin: 0px;
+		margin: 0.3rem 0;
 		margin-left: 0.5rem;
-		padding: .4em .6em;
+		padding: .4em .8em .4em .6em !important;
 		text-decoration: none;
+		line-height: 2em !important;
+		.text-shadow(none);
+		position: relative;
+		vertical-align: middle;
 		&>span, &:hover {
 			.opacity(0.8);
 		}
@@ -30,5 +36,22 @@ td#right-panel {
 		&>span.fa:before {
 			padding-right: 0.25em;
 		}
+	}
+	&>a {
+		border-right: 1.9rem solid rgba(255, 255, 255, 0.1);
+		-moz-background-clip: border;
+		-moz-background-clip: border-box;
+		-webkit-background-clip: border-box;
+		background-clip: border-box;
+		background-color: @button-link-bgcolor;
+		.gradient (desaturate(lighten(@button-link-bgcolor, 5%), 5%), @button-link-bgcolor);
+		color: contrast(@button-link-bgcolor, #333);
+	}
+	&>a:after {
+		font-family: icofont;
+		content: "\203a";
+		position: absolute;
+		right: -1.3rem;
+		color: rgba(255, 255, 255, 0.5);
 	}
 }

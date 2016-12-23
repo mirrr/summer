@@ -105,15 +105,23 @@ form>div>*, form fieldset>div>* {
 
 button {
 	border: none;
-	padding: 0.4em 0.6em;
-	font-size: 1rem;
-	color: contrast(@button-bgcolor, #333);
+	color: contrast(@button-bgcolor, #999999);
+	background-color: @button-bgcolor;
 	.gradient (desaturate(lighten(@button-bgcolor, 5%), 5%), @button-bgcolor);
 	cursor: pointer;
 	outline-style: none;
-	line-height: 1.6rem;
+	.border-radius(3px);
+	display: inline-block;
+	font-size: 1rem;
+	font-style: normal;
+	margin: 0.3rem 0;
+	margin-left: 0.5rem;
+	padding: .4em .8em .4em .6em !important;
+	text-decoration: none;
+	line-height: 2em;
+	.text-shadow(none);
+	position: relative;
 	vertical-align: middle;
-	.border-radius(2px);
 }
 
 button.grey {

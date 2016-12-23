@@ -22,22 +22,19 @@
 			if (progressInterval) {
 				tools.progressStop(0);
 			}
-			progressTimeout = setTimeout(function () {
-				var $s = $('#summer-progress');
-				var $sp = $('#summer-progress div');
-				var i = $s.outerWidth() / 20;
-				$sp.width(1);
-				progressInterval = setInterval(function () {
-					console.log($sp.outerWidth());
-					$sp.width($sp.outerWidth() + i);
-					i = (i / 1.05) + 1;
-				}, 20);
-			}, 100);
+			var $s = $('#summer-progress');
+			var $sp = $('#summer-progress div');
+			var i = $s.outerWidth() / 20;
+			$sp.width(1);
+			progressInterval = setInterval(function () {
+				$sp.width($sp.outerWidth() + i);
+				i = (i / 1.08) + 1;
+			}, 10);
 		};
 		$.progress.stop = function () {
 			clearTimeout(progressTimeout);
 			if (typeof t === "undefined") {
-				t = 500;
+				t = 400;
 			}
 
 			setTimeout(function (t) {
@@ -49,12 +46,25 @@
 			}, t);
 		};
 		$.tools.addButton = function (obj) {
+			var onclick = obj.onClick;
+			if (typeof obj.onClick !== "undefined") {
+				delete obj.onClick;
+			}
 			var $button = $('<button/>', obj);
 			$("#right-panel").append($button);
+			if (onclick) {
+				$button.on("click", function (event) {
+					event = event || window.event;
+					event.preventDefault();
+					onclick(this, event);
+					return false;
+				});
+			}
 			return $button;
 		};
 		$.tools.addLink = function (obj) {
 			var $link = $('<a/>', obj);
+			$link.attr('target', '_blank');
 			$("#right-panel").append($link);
 			return $link;
 		};
@@ -63,8 +73,8 @@
 		var timerId = null;
 		$.tools.searcher = function (onChange) {
 			var $search = $('input[type=text].allsearch');
-			if ($search.length && !$search.is(":visible")) {
-				$search.show();
+			if ($search.length && !$search.parent(".li-search").is(":visible")) {
+				$search.parent(".li-search").show();
 				$search.on('keyup', function (e) {
 					if (oldText !== $search.val()) {
 						if (timerId) {
