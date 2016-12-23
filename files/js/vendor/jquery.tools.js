@@ -20,7 +20,7 @@
 
 		$.progress.start = function () {
 			if (progressInterval) {
-				tools.progressStop(0);
+				$.progress.stop(0);
 			}
 			var $s = $('#summer-progress');
 			var $sp = $('#summer-progress div');

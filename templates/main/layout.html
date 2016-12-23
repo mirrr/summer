@@ -14,8 +14,9 @@
 		<title>{{$tabs.title}}{{if not (eq .Title $tabs.title)}} - {{.Title}}{{end}}</title>
 		<link rel="stylesheet" href="{{.Path}}/pkgFiles/build/style.css">
 		<script type="text/javascript">
-			window.panelPath="{{.Path}}";
+			window.panelPath="{{if .Path}}{{.Path}}{{else}}/{{end}}";
 			window.moduleName="{{.Module}}";
+			window.moduleAction="{{.Action}}";
 			window.ajaxUrl = '{{.Path}}/ajax/{{.Module}}/';
 		</script>
 		<script type="text/javascript" src="{{.Path}}/pkgFiles/build/main.js"></script>
@@ -88,7 +89,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="{{var "path"}}"><span class="fa fa-home-2"></span> </a>
+				<a class="navbar-brand" href="{{if var "path"}}{{var "path"}}{{else}}/{{end}}"><span class="fa fa-home-2"></span> </a>
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">

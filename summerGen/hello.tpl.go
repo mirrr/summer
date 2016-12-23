@@ -5,7 +5,7 @@ import (
 )
 
 var helloTpl = template.Must(template.New("hello.go").Parse(`
-package hello
+package {{if .Vendor}}hello{{else}}main{{end}}
 
 import (
 	"gopkg.in/night-codes/summer.v1"
@@ -13,9 +13,11 @@ import (
 
 {{if .Vendor}}
 func New(panel *summer.Panel) summer.Simple {
+{{else}}
+var(
 {{end}}
-	aboutMenu := panel.MainMenu.Add("About Summer")
-	hello := panel.AddModule(
+	aboutMenu {{if .Vendor}}:{{end}}= panel.MainMenu.Add("About Summer")
+	hello {{if .Vendor}}:{{end}}= panel.AddModule(
 		&summer.ModuleSettings{
 			Name:       "hello",
 			Title:      "Welcome to Summer panel",
@@ -25,18 +27,19 @@ func New(panel *summer.Panel) summer.Simple {
 		},
 		&summer.Module{},
 	)
-	panel.AddModule(
+	{{if not .Vendor}}_ = {{end}}panel.AddModule(
 		&summer.ModuleSettings{
-			Name:      "howto",
-			Title:     "Welcome to Summer panel",
-			MenuTitle: "How To Use",
-			GroupTo:   hello,
-			Menu:      aboutMenu,
+			Name:    "howto",
+			Title:   "How To Use",
+			GroupTo: hello,
+			Menu:    aboutMenu,
 		},
 		&summer.Module{},
 	)
 {{if .Vendor}}	return hello
 }
+{{else}}
+)
 {{end}}
 `))
 

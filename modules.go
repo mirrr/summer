@@ -67,8 +67,12 @@ var (
 
 // Ajax  is default module's ajax method
 func (m *Module) Ajax(c *gin.Context) {
+	method := strings.ToLower(c.Param("method"))
+	if len(method) > 0 && method[0] == '/' {
+		method = method[1:]
+	}
 	for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
-		if strings.ToLower(c.Param("method")) == ajaxRoute {
+		if method == ajaxRoute {
 			ajaxFunc(c)
 			return
 		}
@@ -92,7 +96,7 @@ func (m *Module) Websockets(c *gin.Context) {
 
 // Page is default module's page rendering method
 func (m *Module) Page(c *gin.Context) {
-	c.HTML(200, m.Settings.TemplateName+".html", obj{"title": m.Settings.Title})
+	c.HTML(200, m.Settings.TemplateName+".html", obj{"title": m.Settings.Title, "action": c.Param("action")})
 }
 
 // Init is default module's initial method
@@ -128,14 +132,16 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		method := st.Method(i).Type().String()
 		if len(method) > 17 && method[:17] == "func(*gin.Context" {
 			name := strings.ToLower(st.Type().Method(i).Name)
-			if name != "ajax" && name != "page" && name != "websockets" {
-				if method == "func(*gin.Context)" {
-					method := st.Method(i).Interface().(func(*gin.Context))
-					settings.Ajax[name] = method
-				} else if method == "func(*gin.Context, *websocket.Conn)" {
-					method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
-					settings.Websockets[name] = method
-				}
+			switch name {
+			case "ajax", "page", "websockets":
+				continue
+			}
+			if method == "func(*gin.Context)" {
+				method := st.Method(i).Interface().(func(*gin.Context))
+				settings.Ajax[name] = method
+			} else if method == "func(*gin.Context, *websocket.Conn)" {
+				method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
+				settings.Websockets[name] = method
 			}
 		}
 	}
@@ -171,13 +177,15 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		c.Header("Login", c.MustGet("login").(string))
 		c.Header("Title", settings.Title)
 		c.Header("Path", panel.Path)
+		c.Header("Action", c.Param("action"))
 		header := c.Writer.Header()
 		header["Css"] = panel.CSS
 		header["Js"] = panel.JS
 	})
-	moduleGroup.GET("/", s.Page)
-	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/:method", s.Ajax)
-	panel.RouterGroup.GET("/websocket/"+settings.SocketsRouteName+"/:method", s.Websockets)
+
+	moduleGroup.GET("/*action", s.Page)
+	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/*method", s.Ajax)
+	panel.RouterGroup.GET("/websocket/"+settings.SocketsRouteName+"/*method", s.Websockets)
 	s.Init(settings, panel)
 
 	modulesListMu.Lock()

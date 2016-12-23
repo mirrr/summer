@@ -7,11 +7,9 @@ import (
 var mainTpl = template.Must(template.New("main.go").Parse(`package main
 
 import (
+	{{if .Vendor}}"hello"{{end}}
 	"fmt"
-	"gopkg.in/night-codes/summer.v1"{{if .Vendor}}
-
-	/* modules */
-	"hello"{{end}}
+	"gopkg.in/night-codes/summer.v1"
 )
 
 type (
@@ -35,9 +33,7 @@ var (
 		JS:    []string{},                         // add custom JS files to template
 		CSS:   []string{},                         // add custom CSS files to template
 	}){{if .Vendor}}
-
-	helloModule  = hello.New(panel)
-	{{end}}
+	helloModule  = hello.New(panel){{end}}
 )
 
 func main() {

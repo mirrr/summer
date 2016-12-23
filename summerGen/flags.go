@@ -15,8 +15,12 @@ var (
 			Usage: "Module title",
 		},
 		cli.StringFlag{
+			Name:  "collection, c",
+			Usage: "MongoDB collection name (default = module name)",
+		},
+		cli.StringFlag{
 			Name:  "menu",
-			Usage: "Add module to menu (mainMenu, dropMenu)",
+			Usage: "Add module to menu (MainMenu or DropMenu)",
 		},
 		cli.BoolFlag{
 			Name:  "add-search",
@@ -31,12 +35,24 @@ var (
 			Usage: "Add filters block",
 		},
 		cli.BoolFlag{
+			Name:  "add-pages",
+			Usage: "Add list pagination block",
+		},
+		cli.BoolFlag{
 			Name:  "vendor",
 			Usage: "Use vendor path",
 		},
 		cli.BoolFlag{
 			Name:  "separate",
 			Usage: "Separate models form controllers",
+		},
+		cli.StringFlag{
+			Name:  "group",
+			Usage: "Group module to tabs. Use another module name to group",
+		},
+		cli.StringFlag{
+			Name:  "subdir",
+			Usage: "Put template to sub directory ( {{name}}/{{subdir}} - users/active, etc.)",
 		},
 	}
 

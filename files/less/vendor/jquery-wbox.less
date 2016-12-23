@@ -140,32 +140,3 @@
 .w-blured {
 	.blur(2px);
 }
-
-.w-content .form-footer {
-	border-top: solid 1px #e6e6e6;
-	background: #fcfcfc;
-	width: 100%;
-	padding: 1.4em 25px;
-	margin: 70px -25px -20px !important;
-	position: relative;
-	text-align: right;
-	button[type=cancel] {
-		background-color: @button-red-bgcolor;
-		.gradient (desaturate(lighten(@button-red-bgcolor, 5%), 5%), @button-red-bgcolor);
-	}
-}
-
-.w-content .form-footer.required:before {
-	content: "* required fields";
-	position: absolute;
-	top: -36px;
-	color: #bbbbbb;
-	font-style: italic;
-	font-size: 0.8rem;
-	text-align: left;
-}
-
-.w-content .form-footer label {
-	.opacity(0);
-	height: 1px;
-}

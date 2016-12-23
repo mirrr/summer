@@ -154,3 +154,39 @@ fieldset legend {
 	border: none;
 	padding: 0.1em 0.5em;
 }
+
+.form-footer {
+	border-top: solid 1px #e6e6e6;
+	background: #fcfcfc;
+	width: 100%;
+	padding: 1.4em 25px;
+	margin: 70px -25px -20px !important;
+	position: relative;
+	text-align: right;
+	button[type=cancel] {
+		background-color: @button-red-bgcolor;
+		.gradient (desaturate(lighten(@button-red-bgcolor, 5%), 5%), @button-red-bgcolor);
+	}
+}
+
+.form-footer.required:before {
+	content: "* required fields";
+	position: absolute;
+	top: -36px;
+	color: #bbbbbb;
+	font-style: italic;
+	font-size: 0.8rem;
+	left: 1.5rem;
+}
+
+.form-footer label {
+	.opacity(0);
+	height: 1px;
+}
+
+label.required:after {
+	content: "*";
+	color: #FF5961;
+	margin-left: 0.4em;
+	font-size: 0.9em;
+}

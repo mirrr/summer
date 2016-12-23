@@ -61,7 +61,7 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	if val := header["Content-Type"]; len(val) == 0 {
 		header["Content-Type"] = []string{"text/html; charset=utf-8"}
 	}
-	site := map[string]interface{}{"Title": "", "Login": "", "Module": "", "Path": "", "Js": []string{}, "Css": []string{}}
+	site := map[string]interface{}{"Action": "", "Title": "", "Login": "", "Module": "", "Path": "", "Js": []string{}, "Css": []string{}}
 	for k, _ := range site {
 		if val := header[k]; len(val) == 1 {
 			site[k] = header[k][0]

@@ -6,11 +6,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-type (
-	obj map[string]interface{}
-	arr []interface{}
-)
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "summerGen"
