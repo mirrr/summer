@@ -16,6 +16,9 @@ func projectAction(c *cli.Context) error {
 	if err := os.Mkdir(name, 0755); err != nil {
 		return err
 	}
+	if err := os.Mkdir(name+"/files", 0755); err != nil {
+		return err
+	}
 
 	if c.Bool("vendor") {
 		if err := writeFile(name+"/vendor/hello/hello.go", helloTpl, "hello.go", obj{"Vendor": true}); err != nil {
