@@ -124,3 +124,14 @@ func Env(envName string, defaultValue string) (value string) {
 	}
 	return
 }
+func stripSlashes(s string) string {
+	if len(s) > 0 {
+		if s[len(s)-1] == '/' {
+			s = s[:len(s)-1]
+		}
+		if s[0] == '/' {
+			s = s[1:]
+		}
+	}
+	return s
+}

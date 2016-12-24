@@ -177,7 +177,9 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		c.Header("Login", c.MustGet("login").(string))
 		c.Header("Title", settings.Title)
 		c.Header("Path", panel.Path)
-		c.Header("Action", c.Param("action"))
+		c.Header("Ajax", settings.AjaxRouteName)
+		c.Header("Socket", settings.SocketsRouteName)
+		c.Header("Action", stripSlashes(c.Param("action")))
 		header := c.Writer.Header()
 		header["Css"] = panel.CSS
 		header["Js"] = panel.JS

@@ -14,10 +14,11 @@
 		<title>{{$tabs.title}}{{if not (eq .Title $tabs.title)}} - {{.Title}}{{end}}</title>
 		<link rel="stylesheet" href="{{.Path}}/pkgFiles/build/style.css">
 		<script type="text/javascript">
-			window.panelPath="{{if .Path}}{{.Path}}{{else}}/{{end}}";
+			window.panelPath="{{.Path}}/";
 			window.moduleName="{{.Module}}";
 			window.moduleAction="{{.Action}}";
-			window.ajaxUrl = '{{.Path}}/ajax/{{.Module}}/';
+			window.ajaxUrl = '{{.Path}}/ajax/{{.Ajax}}/';
+			window.socketUrl = '{{.Path}}/websocket/{{.Socket}}/';
 		</script>
 		<script type="text/javascript" src="{{.Path}}/pkgFiles/build/main.js"></script>
 		{{range .Js}}<script type="text/javascript" src="{{.}}"></script>{{end}}
