@@ -88,7 +88,6 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 		delete(header, Key)
 	}
 	r.Template.Funcs(template.FuncMap{"site": func(name string) interface{} { return site[name] }})
-	fmt.Println("...", r.Name, r.Data)
 
 	name := r.Name
 	if name != "login.html" && name != "firstStart.html" && site["allow"] != "true" {
