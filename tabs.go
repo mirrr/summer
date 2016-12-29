@@ -42,16 +42,17 @@ func getTabs(panel *Panel, name string, u *UsersStruct) interface{} {
 	if current.GetSettings().GroupTo != nil {
 		parent = current.GetSettings().GroupTo
 	}
-
-	for _, module := range modulesList {
-		sett := module.GetSettings()
-		if sett.GroupTo == parent && checkRights(panel, sett.Rights, u.Rights) {
-			tabsList = append(tabsList, &tab{
-				Order:  sett.MenuOrder,
-				Title:  sett.GroupTitle,
-				Link:   "/" + sett.PageRouteName + "/",
-				Active: module == current,
-			})
+	if checkRights(panel, parent.GetSettings().Rights, u.Rights) {
+		for _, module := range modulesList {
+			sett := module.GetSettings()
+			if sett.GroupTo == parent && checkRights(panel, sett.Rights, u.Rights) {
+				tabsList = append(tabsList, &tab{
+					Order:  sett.MenuOrder,
+					Title:  sett.GroupTitle,
+					Link:   "/" + sett.PageRouteName + "/",
+					Active: module == current,
+				})
+			}
 		}
 	}
 	modulesListMu.Unlock()
