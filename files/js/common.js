@@ -3,9 +3,14 @@ $(function () {
 		return new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + path);
 	}
 
+	$('.navbar-default').find('li.dropdown').each(function (index, el) {
+		if (!$(el).children('ul').length || !$(el).children('ul').children('li').length) {
+			$(el).hide();
+		}
+	});
 	$('.navbar-default').find('li').each(function (index, el) {
 		var $a = $(el).children('a')
-		if ($a && $a.length === 1 && $a.attr('href') === location.pathname) {
+		if ($a && $a.length === 1 && ($a.attr('href') === panelPath + moduleName || $a.attr('href') === panelPath + moduleName + "/")) {
 			var $li = $(el);
 			while ($li.length > 0) {
 				$li.addClass('active');

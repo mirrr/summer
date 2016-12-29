@@ -6,6 +6,7 @@ build="files/build"
 
 compile=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/jquery.highlight.js" \
+"${vendor}/nprogress.js" \
 "${vendor}/jquery.datetimepicker.js" \
 "${vendor}/doT.js" \
 "${vendor}/jquery.doT.plugin.js" \
@@ -28,6 +29,7 @@ compile=$(echo "${vendor}/jquery-2.2.4.js" \
 compileLogin=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/jquery.easing.1.3.min.js" \
 "${vendor}/jquery.message.js" \
+"${vendor}/nprogress.js" \
 "${vendor}/jquery.tools.js" \
 "${vendor}/jquery.ajaxHelper.js")
 

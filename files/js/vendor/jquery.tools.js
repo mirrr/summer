@@ -13,38 +13,7 @@
 	}
 
 	(function ($) {
-		var progressInterval = null;
-		var progressTimeout = null;
 		$.tools = function () {};
-		$.progress = function () {};
-
-		$.progress.start = function () {
-			if (progressInterval) {
-				$.progress.stop(0);
-			}
-			var $s = $('#summer-progress');
-			var $sp = $('#summer-progress div');
-			var i = $s.outerWidth() / 20;
-			$sp.width(1);
-			progressInterval = setInterval(function () {
-				$sp.width($sp.outerWidth() + i);
-				i = (i / 1.08) + 1;
-			}, 10);
-		};
-		$.progress.stop = function () {
-			clearTimeout(progressTimeout);
-			if (typeof t === "undefined") {
-				t = 400;
-			}
-
-			setTimeout(function (t) {
-				if (progressInterval) {
-					clearInterval(progressInterval);
-					progressInterval = null;
-					$('#summer-progress div').width(0);
-				}
-			}, t);
-		};
 		$.tools.addButton = function (obj) {
 			var onclick = obj.onClick;
 			if (typeof obj.onClick !== "undefined") {

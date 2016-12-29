@@ -33,10 +33,15 @@ func PackagePath() string {
 	return basepath
 }
 
-// плагин к шаблонизатору, преобразующий объект в json
+// templates plugin for converts to json
 func jsoner(object interface{}) string {
 	j, _ := json.Marshal(object)
 	return string(j)
+}
+
+// templates plugin - dummy
+func getSite(name string) interface{} {
+	return ""
 }
 
 // PostBind binds data from post request and validates them
@@ -136,4 +141,40 @@ func stripSlashes(s string) string {
 		}
 	}
 	return s
+}
+
+func uniqAppend(s1, s2 []string) []string {
+	m := map[string]bool{}
+	for _, v := range s1 {
+		m[v] = true
+	}
+	for _, v := range s2 {
+		m[v] = true
+	}
+	ret := []string{}
+	for k := range m {
+		ret = append(ret, k)
+	}
+	return ret
+}
+
+func isOverlap(s1, s2 []string) bool {
+	m := map[string]bool{}
+	for _, v := range s1 {
+		m[v] = true
+	}
+	for _, v := range s2 {
+		if m[v] {
+			return true
+		}
+	}
+	return false
+}
+
+func checkRights(panel *Panel, modR Rights, usrR Rights) bool {
+	userActions := uniqAppend(panel.Groups.Get(usrR.Groups...), usrR.Actions)
+	rightsEmpty := len(modR.Groups) == 0 && len(modR.Actions) == 0
+	allow := (len(modR.Groups) > 0 && isOverlap(usrR.Groups, modR.Groups)) || (len(modR.Actions) > 0 && isOverlap(userActions, modR.Actions))
+
+	return rightsEmpty || allow
 }

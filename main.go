@@ -49,6 +49,8 @@ type (
 		MainMenu *Menu
 		// DropMenu is top user dropdown menu
 		DropMenu *Menu
+		// Groups
+		Groups *GroupsList
 	}
 )
 
@@ -85,6 +87,7 @@ func Create(s Settings) *Panel {
 		RootMenu: rootMenu,
 		MainMenu: rootMenu.Add("[Main]"),
 		DropMenu: rootMenu.Add("[Drop]"),
+		Groups:   &GroupsList{},
 	}
 	// apply default settings
 	extend(&panel.Settings, &s)
@@ -103,6 +106,7 @@ func Create(s Settings) *Panel {
 	if len(panel.DefaultPage) == 0 || panel.DefaultPage[0] != '/' {
 		panel.DefaultPage = "/" + panel.DefaultPage
 	}
+	panel.Vars["panel"] = &panel
 	panel.Vars["path"] = panel.Path
 	panel.Vars["title"] = panel.Title
 	panel.Vars["mainMenu"] = panel.MainMenu
@@ -111,9 +115,16 @@ func Create(s Settings) *Panel {
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
-	funcMap := template.FuncMap{"jsoner": jsoner, "menu": getMenuItems, "tabs": getTabs, "var": func(key string) interface{} {
-		return panel.Vars[key]
-	}}
+	funcMap := template.FuncMap{
+		"jsoner": jsoner,
+		"menu":   getMenuItems,
+		"user":   getByLogin,
+		"tabs":   getTabs,
+		"site":   getSite,
+		"var": func(key string) interface{} {
+			return panel.Vars[key]
+		},
+	}
 	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/", panel.Views + "/"}, panel.ViewsDoT, funcMap)
 
 	// включение статических файлов
@@ -125,9 +136,10 @@ func Create(s Settings) *Panel {
 		panic(panel.Engine.Run(":" + types.String(panel.Port)))
 	}()
 
-	admins.Init(&panel)
+	auth.Init(&panel)
+	Users.init(&panel)
 	panel.RouterGroup = panel.Engine.Group(panel.Path)
-	admins.Auth(panel.RouterGroup)
+	auth.Auth(panel.RouterGroup)
 	panel.RouterGroup.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")

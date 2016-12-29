@@ -61,7 +61,9 @@ func (m *Menu) Add(title string, order ...int) *Menu {
 	return menu
 }
 
-func getMenuItems(m *Menu) interface{} {
+func getMenuItems(panel *Panel, m *Menu, u *UsersStruct) menuItems {
+	userActions := uniqAppend(panel.Groups.Get(u.Rights.Groups...), u.Rights.Actions)
+
 	menuItemsList := menuItems{}
 	menuListMu.Lock()
 	for _, menu := range menusList {
@@ -79,11 +81,16 @@ func getMenuItems(m *Menu) interface{} {
 	menuListMu.Unlock()
 	modulesListMu.Lock()
 	for _, module := range modulesList {
-		if module.GetSettings().Menu == m {
+		sett := module.GetSettings()
+		msr := sett.Rights
+		rightsEmpty := len(msr.Groups) == 0 && len(msr.Actions) == 0
+		allow := (len(msr.Groups) > 0 && isOverlap(u.Rights.Groups, msr.Groups)) || (len(msr.Actions) > 0 && isOverlap(userActions, msr.Actions))
+
+		if sett.Menu == m && (rightsEmpty || allow) {
 			menuItemsList = append(menuItemsList, &menuItem{
-				Order:   module.GetSettings().MenuOrder,
-				Title:   module.GetSettings().MenuTitle,
-				Parent:  module.GetSettings().Menu,
+				Order:   sett.MenuOrder,
+				Title:   sett.MenuTitle,
+				Parent:  sett.Menu,
 				Link:    "/" + module.GetSettings().PageRouteName + "/",
 				SubMenu: false,
 			})

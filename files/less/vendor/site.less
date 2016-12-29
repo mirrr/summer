@@ -30,24 +30,6 @@ body, html {
 	margin-bottom: 0;
 }
 
-#summer-progress {
-	height: 2px;
-	text-align: left;
-	overflow: hidden;
-	position: relative;
-	position: fixed;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	z-index: 10000;
-}
-
-#summer-progress>div {
-	width: 0px;
-	height: 3px;
-	.horizontal-gradient (@progress-color, @progress-color2);
-}
-
 .right-panel {
 	top: 1.4rem;
 	right: 15px;
@@ -409,4 +391,12 @@ button .fa {
 #total0 {
 	width: 8em;
 	font-weight: bold;
+}
+
+.access-deny {
+	background: #FFE8DE;
+	text-shadow: 0 1px 0px rgba(255, 255, 255, 0.6);
+	padding: 1.4rem 2rem !important;
+	margin: 0 -1.2rem !important;
+	line-height: 1.6em;
 }

@@ -1,5 +1,13 @@
+{{ define "access-deny" }}
+	{{template "header" .}}
+		<p class="access-deny"><b>This resource is not available.</b> <br />For more information, contact your administrator.</p>
+	{{template "footer" .}}
+{{ end }}
+
 {{ define "header" }}
-{{ $tabs := tabs (.Module)}}
+{{ $user := user (site "login")}}
+{{ $panel := var "panel"}}
+{{ $tabs := tabs $panel (site "module") $user}}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -9,50 +17,56 @@
 		<meta name="HandheldFriendly" content="true"/>
 		<meta name="viewport" content="width=device-width, initial-scale=0.8, maximum-scale=0.8, user-scalable=no">
 		<meta name="theme-color" content="#354463">
-		<link rel="shortcut icon" href="{{.Path}}/pkgFiles/favicon.ico">
-		<link rel="icon" sizes="192x192" href="{{.Path}}/pkgFiles/favicon192x192.png">
-		<title>{{$tabs.title}}{{if not (eq .Title $tabs.title)}} - {{.Title}}{{end}}</title>
-		<link rel="stylesheet" href="{{.Path}}/pkgFiles/build/style.css">
+		<link rel="shortcut icon" href="{{site "path"}}/pkgFiles/favicon.ico">
+		<link rel="icon" sizes="192x192" href="{{site "path"}}/pkgFiles/favicon192x192.png">
+		<title>{{ $tabs.title }}{{ if not (eq (site "title") $tabs.title) }} - {{ site "title" }}{{ end }}</title>
+		<link rel="stylesheet" href="{{site "path"}}/pkgFiles/build/style.css">
 		<script type="text/javascript">
-			window.panelPath="{{.Path}}/";
-			window.moduleName="{{.Module}}";
-			window.moduleAction="{{.Action}}";
-			window.ajaxUrl = '{{.Path}}/ajax/{{.Ajax}}/';
-			window.socketUrl = '{{.Path}}/websocket/{{.Socket}}/';
+			window.panelPath="{{site "path"}}/";
+			window.moduleName="{{site "module"}}";
+			window.moduleAction="{{site "action"}}";
+			window.ajaxUrl = '{{site "path"}}/ajax/{{site "ajax"}}/';
+			window.socketUrl = '{{site "path"}}/websocket/{{site "socket"}}/';
 		</script>
-		<script type="text/javascript" src="{{.Path}}/pkgFiles/build/main.js"></script>
-		{{range .Js}}<script type="text/javascript" src="{{.}}"></script>{{end}}
-		{{range .Css}}<link rel="stylesheet" href="{{.}}">{{end}}
-
+		<script type="text/javascript" src="{{site "path"}}/pkgFiles/build/main.js"></script>
+		{{ range site "js" }}<script type="text/javascript" src="{{.}}"></script>{{ end }}
+		{{ range site "css" }}<link rel="stylesheet" href="{{.}}">{{ end }}
 		<style>
-			.w-title:before {background-image: url("{{.Path}}/pkgFiles/images/title.png");}
-			@media (min-width:1010px) {.navbar-default {background-image: url("{{.Path}}/pkgFiles/images/title.png");}}
-			.w-wrap {background-image: url("{{.Path}}/pkgFiles/images/bg.png");}
+			.w-title:before {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
+			@media (min-width:1010px) {.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}}
+			.w-wrap {background-image: url("{{site "path"}}/pkgFiles/images/bg.png");}
 		</style>
 	</head>
 
 	<body>
 		<div id="all">
-			{{template "menu" .}}
+			{{ template "menu" . }}
 			<div>
 				<div id="summer-progress"><div></div></div>
 				<div class="container" id="navbar-tabs">
 					<table>
 						<tr>
 							<td id="navbar-tabs-title">
-								<h2 style="padding: 0">{{if $tabs.icon}}<i class="fa fa-{{$tabs.icon}} fa-lg" aria-hidden="true"></i>{{end}}{{$tabs.title}}{{if not (eq .Title $tabs.title)}} <i class="fa fa-angle-double-right" aria-hidden="true"></i> {{.Title}}{{end}}</h2>
+							{{ if eq (site "allow") "true" }}
+								<h2 style="padding: 0">{{ if $tabs.icon }}<i class="fa fa-{{$tabs.icon}} fa-lg" aria-hidden="true"></i>{{ end }}{{ $tabs.title }}{{ if not (eq (site "title") $tabs.title) }} <i class="fa fa-angle-double-right" aria-hidden="true"></i> {{ site "title" }}{{ end }}</h2>
+							{{ else }}
+								<h2 style="padding: 0"><span class="fa fa-power-cord fa-lg"></span> Access denied</h2>
+							{{ end }}
 							</td>
 							<td id="right-panel" rowspan="2">
 							</td>
 						</tr>
 						<tr>
 							<td id="navbar-tabs-content" class="unselectable">
+							{{if eq (site "allow") "true"}}
 								{{ range $tabs.list }}
-								<a href="{{var "path"}}{{ .Link }}" class="{{if .Active}}active{{end}}">{{.Title}}</a>
+								<a href="{{var "path"}}{{ .Link }}" class="{{if .Active}}active{{ end }}">{{ .Title }}</a>
 								{{ end }}
+							{{ end }}
 							</td>
 						</tr>
 					</table>
+
 				</div>
 			</div>
 			<div class="container" id="content">
@@ -79,7 +93,9 @@
 
 
 
-{{ define "menu"}}
+{{ define "menu" }}
+	{{ $user := user (site "login")}}
+	{{ $panel := var "panel"}}
 	<div class="navbar navbar-default navbar-static-top" role="navigation">
 		<a name="top"></a>
 		<div class="container">
@@ -90,20 +106,20 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</button>
-				<a class="navbar-brand" href="{{if var "path"}}{{var "path"}}{{else}}/{{end}}"><span class="fa fa-home-2"></span> </a>
+				<a class="navbar-brand" href="{{if var "path"}}{{var "path"}}{{ else }}/{{ end }}"><span class="fa fa-home-2"></span> </a>
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
-					{{template "subMenu" (var "mainMenu")}}
+					{{ template "subMenu" (var "mainMenu") }}
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li class="li-search">
 						<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
 					</li>
-					<li class="dropdown {{if false}}active{{end}}">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{.Login}} <b class="caret"></b></a>
+					<li class="dropdown {{if false}}active{{ end }}">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{ (user (site "login")).Name }} <b class="caret"></b></a>
 						<ul class="dropdown-menu">
-							{{range menu (var "dropMenu")}}{{if not .SubMenu }}{{template "menuItem" .}}{{end}}{{end}}
+							{{ range menu $panel (var "dropMenu") $user }}{{ if not .SubMenu }}{{ template "menuItem" . }}{{ end }}{{ end }}
 							<li class="divider"></li>
 							<li><a href="{{var "path"}}/logout">Logout</a></li>
 						</ul>
@@ -118,14 +134,16 @@
 	<li class="">
 		<a href="{{var "path"}}{{ .Link }}">{{ .Title }}</a>
 	</li>
-{{end}}
+{{ end }}
 
 {{ define "subMenu" }}
-	{{range menu .}}{{if and .SubMenu .Current }}
+	{{ $user := user (site "login")}}
+	{{ $panel := var "panel"}}
+	{{ range menu $panel . $user}}{{ if and .SubMenu .Current }}
 	<li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ .Title }} <b class="caret"></b></a>
 		<ul class="dropdown-menu">
-			{{template "subMenu" .Current}}
+			{{ template "subMenu" .Current }}
 		</ul>
 	</li>
-	{{else}}{{template "menuItem" .}}{{end}}{{end}}
-{{end}}
+	{{ else }}{{ template "menuItem" . }}{{ end }}{{ end }}
+{{ end }}

@@ -30,7 +30,7 @@ func (slice tabs) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
-func getTabs(name string) interface{} {
+func getTabs(panel *Panel, name string, u *UsersStruct) interface{} {
 	modulesListMu.Lock()
 	tabsList := tabs{}
 	if modulesList[name] == nil {
@@ -44,11 +44,12 @@ func getTabs(name string) interface{} {
 	}
 
 	for _, module := range modulesList {
-		if module.GetSettings().GroupTo == parent {
+		sett := module.GetSettings()
+		if sett.GroupTo == parent && checkRights(panel, sett.Rights, u.Rights) {
 			tabsList = append(tabsList, &tab{
-				Order:  module.GetSettings().MenuOrder,
-				Title:  module.GetSettings().GroupTitle,
-				Link:   "/" + module.GetSettings().PageRouteName + "/",
+				Order:  sett.MenuOrder,
+				Title:  sett.GroupTitle,
+				Link:   "/" + sett.PageRouteName + "/",
 				Active: module == current,
 			})
 		}

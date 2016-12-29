@@ -29,9 +29,21 @@ type PageRender struct {
 }
 
 var (
-	dmu     sync.Mutex
-	dots    = map[string]string{}
-	spliter = regexp.MustCompile("[\\s\\/]+")
+	dmu      sync.Mutex
+	dots     = map[string]string{}
+	spliter  = regexp.MustCompile("[\\s\\/]+")
+	siteVars = map[string]bool{
+		"action": false,
+		"title":  false,
+		"login":  false,
+		"module": false,
+		"path":   false,
+		"ajax":   false,
+		"socket": false,
+		"allow":  false,
+		"js":     true,
+		"css":    true,
+	}
 )
 
 func init() {
@@ -61,32 +73,33 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	if val := header["Content-Type"]; len(val) == 0 {
 		header["Content-Type"] = []string{"text/html; charset=utf-8"}
 	}
-	site := map[string]interface{}{
-		"Action": "",
-		"Title":  "",
-		"Login":  "",
-		"Module": "",
-		"Path":   "",
-		"Ajax":   "",
-		"Socket": "",
-	}
-	for k, _ := range site {
-		if val := header[k]; len(val) > 0 {
-			site[k] = header[k][0]
-			header[k] = []string{}
+
+	site := map[string]interface{}{}
+	for key, array := range siteVars {
+		Key := strings.Title(key)
+		if array {
+			site[key] = header[Key]
+		} else {
+			site[key] = ""
+			if val := header[Key]; len(val) > 0 {
+				site[key] = val[0]
+			}
 		}
+		delete(header, Key)
 	}
-	site["Js"] = header["Js"]
-	site["Css"] = header["Css"]
+	r.Template.Funcs(template.FuncMap{"site": func(name string) interface{} { return site[name] }})
+	fmt.Println("...", r.Name, r.Data)
 
-	data := map[string]interface{}{"data": r.Data, "site": site}
-
+	name := r.Name
+	if name != "login.html" && name != "firstStart.html" && site["allow"] != "true" {
+		name = "access-deny"
+	}
 	if len(r.Name) > 0 {
-		if err := r.Template.ExecuteTemplate(w, r.Name, data); err != nil {
+		if err := r.Template.ExecuteTemplate(w, name, r.Data); err != nil {
 			fmt.Println("Template err: ", err.Error())
 		}
 	} else {
-		if err := r.Template.Execute(w, data); err != nil {
+		if err := r.Template.Execute(w, r.Data); err != nil {
 			fmt.Println("Template err: ", err.Error())
 		}
 	}
@@ -177,7 +190,7 @@ func parseFiles(t *template.Template, dotPath string, path string, filenames ...
 		}
 
 		if name != "layout.html" && name != "login.html" && name != "firstStart.html" {
-			s = `{{template "header" .site}}{{with .data}} ` + s + ` {{end}}{{template "footer" .site}}`
+			s = `{{template "header" .}}` + s + `{{template "footer" .}}`
 		}
 
 		var tmpl *template.Template

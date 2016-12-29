@@ -1,6 +1,7 @@
 package summer
 
 import (
+	"gopkg.in/night-codes/types.v1"
 	"reflect"
 	"strings"
 	"sync"
@@ -36,14 +37,12 @@ type (
 		Title            string
 		CollectionName   string
 		TemplateName     string
-		AllowGroups      []string
-		AllowRoles       []string
-		AllowUsers       []uint64
 		Ajax             Func
 		Websockets       WebFunc
 		Icon             string
 		GroupTo          Simple
 		GroupTitle       string
+		Rights           Rights
 	}
 
 	// Simple module interface
@@ -67,23 +66,25 @@ var (
 
 // Ajax  is default module's ajax method
 func (m *Module) Ajax(c *gin.Context) {
-	method := strings.ToLower(c.Param("method"))
-	if len(method) > 0 && method[0] == '/' {
-		method = method[1:]
-	}
-	for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
-		if method == ajaxRoute {
-			ajaxFunc(c)
-			return
+	if c.MustGet("Allow").(bool) {
+		method := stripSlashes(strings.ToLower(c.Param("method")))
+		for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
+			if method == ajaxRoute {
+				ajaxFunc(c)
+				return
+			}
 		}
+		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+		return
 	}
-	c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+	c.String(403, `Accesss denied`)
 }
 
 // Websockets  is default module's websockets method
 func (m *Module) Websockets(c *gin.Context) {
+	method := stripSlashes(strings.ToLower(c.Param("method")))
 	for websocketsRoute, websocketsFunc := range m.Settings.Websockets {
-		if strings.ToLower(c.Param("method")) == websocketsRoute {
+		if method == websocketsRoute {
 			if conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil); err == nil {
 				websocketsFunc(c, conn)
 				return
@@ -171,8 +172,20 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		settings.TemplateName = strings.Replace(settings.Name, "/", "-", -1)
 	}
 
+	settings.Rights.Actions = uniqAppend(settings.Rights.Actions, []string{settings.Name})
+	panel.Groups.Add("root", settings.Name)
+
+	// middleware for rights check
+	preAllow := func(c *gin.Context) {
+		allow := checkRights(panel, settings.Rights, (c.MustGet("user").(UsersStruct)).Rights)
+		c.Set("Allow", allow)
+		c.Header("Allow", types.String(allow))
+	}
+
+	// PAGE route
 	moduleGroup := panel.RouterGroup.Group(settings.PageRouteName)
 	moduleGroup.Use(func(c *gin.Context) {
+		preAllow(c)
 		c.Header("Module", settings.PageRouteName)
 		c.Header("Login", c.MustGet("login").(string))
 		c.Header("Title", settings.Title)
@@ -184,10 +197,18 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		header["Css"] = panel.CSS
 		header["Js"] = panel.JS
 	})
-
 	moduleGroup.GET("/*action", s.Page)
-	panel.RouterGroup.POST("/ajax/"+settings.AjaxRouteName+"/*method", s.Ajax)
-	panel.RouterGroup.GET("/websocket/"+settings.SocketsRouteName+"/*method", s.Websockets)
+
+	// AJAX routes
+	ajaxGroup := panel.RouterGroup.Group("/ajax/" + settings.AjaxRouteName)
+	ajaxGroup.Use(preAllow)
+	ajaxGroup.POST("/*method", s.Ajax)
+
+	// SOCKET routes
+	socketGroup := panel.RouterGroup.Group("/websocket/" + settings.SocketsRouteName)
+	socketGroup.Use(preAllow)
+	socketGroup.GET("/*method", s.Websockets)
+
 	s.Init(settings, panel)
 
 	modulesListMu.Lock()
