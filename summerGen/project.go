@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/urfave/cli"
 )
@@ -40,14 +41,23 @@ func projectAction(c *cli.Context) error {
 		return err
 	}
 
+	dbName := c.String("db")
+	if len(dbName) == 0 {
+		dbName = name
+	}
+	Title := c.String("title")
+	if len(Title) == 0 {
+		Title = strings.Title(name)
+	}
+
 	if err := writeFile(name+"/main.go", mainTpl, "main.go", obj{
-		"Title":    c.String("title"),
+		"Title":    Title,
 		"Vendor":   c.Bool("vendor"),
 		"Port":     c.Int("port"),
 		"Path":     c.String("dir"),
-		"DBName":   c.String("db"),
-		"Views":    c.String("views"),
-		"ViewsDoT": c.String("views-dot"),
+		"DBName":   dbName,
+		"Views":    stripSlashes(c.String("views")),
+		"ViewsDoT": stripSlashes(c.String("views-dot")),
 	}); err != nil {
 		return err
 	}

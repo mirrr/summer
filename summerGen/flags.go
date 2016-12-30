@@ -72,7 +72,6 @@ var (
 		},
 		cli.StringFlag{
 			Name:  "db",
-			Value: "summer-app",
 			Usage: "MongoDB database name",
 		},
 		cli.IntFlag{
