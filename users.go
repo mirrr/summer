@@ -21,22 +21,20 @@ type (
 		Deleted  bool                   `form:"-" json:"-" bson:"deleted"`
 		Rights   Rights                 `form:"-" json:"rights" bson:"rights"`
 		Settings map[string]interface{} `form:"-" json:"settings" bson:"-"`
+		Demo     bool
 	}
 	users struct {
+		panel      *Panel
 		list       map[string]*UsersStruct // key - login
 		collection *mgo.Collection
-		Panel
 		sync.Mutex
 	}
 )
 
-var (
-	Users = users{}
-)
-
 func (u *users) init(panel *Panel) {
-	u.Panel = *panel
-	u.collection = mongo.DB(panel.DBName).C(u.Panel.UsersCollection)
+	u.Mutex = sync.Mutex{}
+	u.panel = panel
+	u.collection = mongo.DB(panel.DBName).C(panel.UsersCollection)
 	u.list = map[string]*UsersStruct{}
 	go func() {
 		u.tick()
@@ -48,8 +46,8 @@ func (u *users) init(panel *Panel) {
 
 // Add new user from struct
 func (u *users) Add(user UsersStruct) error {
-	user.ID = ai.Next(u.UsersCollection)
-	user.Password = H3hash(user.Password + u.AuthSalt)
+	user.ID = ai.Next(u.panel.UsersCollection)
+	user.Password = H3hash(user.Password + u.panel.AuthSalt)
 	user.Created = uint(time.Now().Unix() / 60)
 	user.Updated = user.Created
 
@@ -80,11 +78,15 @@ func (u *users) tick() {
 }
 
 // GetArr exports array of users
-func (u *users) GetByLogin(login string) (user *UsersStruct, exists bool) {
+func (u *users) GetByLogin(login string) *UsersStruct {
 	u.Lock()
 	defer u.Unlock()
-	user, exists = u.list[login]
-	return
+	user, exists := u.list[login]
+	if u.panel.DisableAuth || !exists {
+		us := getDummyUser(login)
+		user = &us
+	}
+	return user
 }
 
 // Length of array of users
@@ -94,7 +96,15 @@ func (u *users) Length() int {
 	return len(u.list)
 }
 
-func getByLogin(login string) *UsersStruct {
-	user, _ := Users.GetByLogin(login)
-	return user
+func getDummyUser(login string) UsersStruct {
+	return UsersStruct{
+		Name:  login,
+		Login: login,
+		Rights: Rights{
+			Groups:  []string{"root"},
+			Actions: []string{},
+		},
+		Settings: obj{},
+		Demo:     true,
+	}
 }

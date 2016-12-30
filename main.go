@@ -51,6 +51,8 @@ type (
 		DropMenu *Menu
 		// Groups
 		Groups *GroupsList
+		// Users
+		Users *users
 	}
 )
 
@@ -115,10 +117,14 @@ func Create(s Settings) *Panel {
 	// init autoincrement module
 	ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
+	auth.Init(&panel)
+	panel.Users = new(users)
+	panel.Users.init(&panel)
+
 	funcMap := template.FuncMap{
 		"jsoner": jsoner,
 		"menu":   getMenuItems,
-		"user":   getByLogin,
+		"user":   panel.Users.GetByLogin,
 		"tabs":   getTabs,
 		"site":   getSite,
 		"var": func(key string) interface{} {
@@ -136,8 +142,6 @@ func Create(s Settings) *Panel {
 		panic(panel.Engine.Run(":" + types.String(panel.Port)))
 	}()
 
-	auth.Init(&panel)
-	Users.init(&panel)
 	panel.RouterGroup = panel.Engine.Group(panel.Path)
 	auth.Auth(panel.RouterGroup)
 	panel.RouterGroup.GET("/", func(c *gin.Context) {

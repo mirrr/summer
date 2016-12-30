@@ -117,11 +117,13 @@
 						<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
 					</li>
 					<li class="dropdown {{if false}}active{{ end }}">
-						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{ (user (site "login")).Name }} <b class="caret"></b></a>
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{ $user.Name }} <b class="caret"></b></a>
 						<ul class="dropdown-menu">
 							{{ range menu $panel (var "dropMenu") $user }}{{ if not .SubMenu }}{{ template "menuItem" . }}{{ end }}{{ end }}
+							{{if not $user.Demo}}
 							<li class="divider"></li>
 							<li><a href="{{var "path"}}/logout">Logout</a></li>
+							{{ end }}
 						</ul>
 					</li>
 				</ul>

@@ -93,7 +93,7 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	if name != "login.html" && name != "firstStart.html" && site["allow"] != "true" {
 		name = "access-deny"
 	}
-	if len(r.Name) > 0 {
+	if len(name) > 0 {
 		if err := r.Template.ExecuteTemplate(w, name, r.Data); err != nil {
 			fmt.Println("Template err: ", err.Error())
 		}
