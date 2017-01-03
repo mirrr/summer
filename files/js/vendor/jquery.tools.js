@@ -20,7 +20,7 @@
 				delete obj.onClick;
 			}
 			var $button = $('<button/>', obj);
-			$("#right-panel").append($button);
+			$("#right-panel>div").append($button);
 			if (onclick) {
 				$button.on("click", function (event) {
 					event = event || window.event;
@@ -32,9 +32,19 @@
 			return $button;
 		};
 		$.tools.addLink = function (obj) {
+			$link = $.tools.createBoxLink(obj);
+			$('#right-panel>div').append($link);
+			return $link;
+		};
+		$.tools.createBoxLink = function (obj) {
 			var $link = $('<a/>', obj);
-			$link.attr('target', '_blank');
-			$("#right-panel").append($link);
+			$link.attr({
+				'target': '_blank',
+				'title': $link.text()
+			}).html($('<span/>', {
+				'class': 'text',
+				'html': $link.html(),
+			})).addClass('button');
 			return $link;
 		};
 

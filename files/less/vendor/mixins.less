@@ -48,9 +48,11 @@
 	-webkit-border-radius: @radius;
 	-moz-border-radius: @radius;
 	border-radius: @radius;
-	-moz-background-clip: padding;
-	-webkit-background-clip: padding-box;
-	background-clip: padding-box;
+}
+.background-clip (@type: border-box) {
+	-moz-background-clip: @type;
+	-webkit-background-clip: @type;
+	background-clip: @type;
 }
 
 .opacity (@opacity: 0.5) {

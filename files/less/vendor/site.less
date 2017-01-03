@@ -380,14 +380,6 @@ input.date+label:before {
 	text-align: center;
 }
 
-button .fa {
-	position: relative;
-	width: 1.5rem;
-	display: inline-block;
-	vertical-align: middle;
-	text-align: center;
-}
-
 #total0 {
 	width: 8em;
 	font-weight: bold;
@@ -399,4 +391,20 @@ button .fa {
 	padding: 1.4rem 2rem !important;
 	margin: 0 -1.2rem !important;
 	line-height: 1.6em;
+}
+
+.navbar-notify {
+	height: auto;
+	display: inline-block;
+	vertical-align: middle;
+	a {
+		padding-left: 0.6rem !important;
+		padding-right: 0.6rem !important;
+	}
+	span {
+		.opacity(0.9);
+	}
+	&:hover span {
+		.opacity(1);
+	}
 }

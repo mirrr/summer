@@ -42,7 +42,6 @@
 		<div id="all">
 			{{ template "menu" . }}
 			<div>
-				<div id="summer-progress"><div></div></div>
 				<div class="container" id="navbar-tabs">
 					<table>
 						<tr>
@@ -54,6 +53,7 @@
 							{{ end }}
 							</td>
 							<td id="right-panel" rowspan="2">
+								<div></div>
 							</td>
 						</tr>
 						<tr>
@@ -70,9 +70,11 @@
 				</div>
 			</div>
 			<div class="container" id="content">
+				<div id="inside-content">
 {{ end }}
 
 {{ define "footer" }}
+				</div>
 			</div>
 			<div class="back-to-top">
 				<a href="#top">
@@ -85,7 +87,7 @@
 				</div>
 			</footer>
 		</div>
-		{{ dot "layout/form-settings.html" }}
+		{{ block "dots" .}}{{ end }}
 		{{ dot "layout/script.js" }}
 	</body>
 </html>
@@ -100,13 +102,15 @@
 		<a name="top"></a>
 		<div class="container">
 			<div class="navbar-header">
-				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-					<span class="sr-only">Menu visibility</span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-					<span class="icon-bar"></span>
-				</button>
+				<a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="fa fa-ellipsis-dots-v"></span>
+				</a>
 				<a class="navbar-brand" href="{{if var "path"}}{{var "path"}}{{ else }}/{{ end }}"><span class="fa fa-home-2"></span> </a>
+				{{ if eq (site "allow") "true" }}
+					<h2>{{ site "title" }}</h2>
+				{{ else }}
+					<h2><span class="fa fa-power-cord fa-lg"></span> Access denied</h2>
+				{{ end }}
 			</div>
 			<div class="navbar-collapse collapse">
 				<ul class="nav navbar-nav">
@@ -114,7 +118,14 @@
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<li class="li-search">
-						<input type="text" class="allsearch" placeholder="Поиск" class="form-control">
+						<input type="text" class="allsearch" placeholder="Search" class="form-control">
+					</li>
+					<li class="navbar-notify dropdown" >
+						<a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="fa fa-drawer2"></span></a>
+						<ul class="dropdown-menu">
+							<li><b>No notifications.</b></li>
+							<li><a href="#">See all notifications.</a></li>
+						</ul>
 					</li>
 					<li class="dropdown {{if false}}active{{ end }}">
 						<a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="fa fa-user"></span> {{ $user.Name }} <b class="caret"></b></a>
@@ -127,6 +138,7 @@
 						</ul>
 					</li>
 				</ul>
+
 			</div>
 		</div>
 	</div>

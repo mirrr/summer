@@ -61,9 +61,12 @@ div#navbar-tabs {
 			background: transparent !important;
 			text-align: right;
 			vertical-align: bottom;
-			padding: 0.7rem 0;
+			padding: 0.4rem 0;
 		}
 		td#navbar-tabs-content {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
 			text-align: left;
 			padding-bottom: 0 !important;
 			text-overflow: ellipsis;
@@ -96,6 +99,12 @@ div#navbar-tabs {
 				}
 			}
 		}
+	}
+}
+
+@media (max-width:1010px) {
+	div#navbar-tabs h2 {
+		display: none;
 	}
 }
 
