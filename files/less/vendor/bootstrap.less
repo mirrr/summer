@@ -3111,16 +3111,25 @@ textarea.input-lg, select[multiple].input-lg {
 .dropdown-menu>li {
     &>a, &>span, &>b {
         display: block;
-        padding: 3px 20px;
+        padding: .5rem .8rem;
         clear: both;
         line-height: 1.42857143;
         color: #333;
         white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        max-width: 15em;
+        * {
+            white-space: normal;
+        }
     }
-    &>b {
+    &>.title {
         background-color: @button-red-bgcolor;
         .gradient (desaturate(lighten(@button-red-bgcolor, 5%), 5%), @button-red-bgcolor);
         color: contrast(@button-red-bgcolor, #999999);
+    }
+    &>.title, &>span, &>b {
+        .opacity(1);
     }
 }
 
@@ -3936,6 +3945,11 @@ textarea.input-group-sm>.form-control, textarea.input-group-sm>.input-group-addo
     }
     .navbar-nav .open .dropdown-menu>li>a:hover, .navbar-nav .open .dropdown-menu>li>a:focus {
         background-image: none;
+    }
+    .dropdown-menu>li {
+        &>a, &>span, &>b {
+            max-width: 100%;
+        }
     }
 }
 
@@ -6136,10 +6150,6 @@ button.close {
     padding: 0;
     border: none;
     border-radius: 0;
-}
-
-.dropdown-menu>li>a {
-    padding: 0.4em 1.5em;
 }
 
 .dropdown-menu .divider {
