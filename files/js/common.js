@@ -46,8 +46,17 @@ $(function () {
 	});
 
 
+	// Select2 starter
+	function selectFn() {
+		var $select = $(this);
+		$select.select2({
+			language: "ru",
+			placeholder: $select.attr("placeholder")
+		});
+	}
+	$('select').each(selectFn);
+
 	/* Инициализация библиотеки всплывающего окна */
-	$('select').select2();
 	$.wbox.init({
 		parent: 'body',
 		blures: '#all',
@@ -55,9 +64,7 @@ $(function () {
 			// Кастомные чекбоксы в окне
 			$('.w-box input.switch:checkbox').switchCheckbox();
 			// Кастомный выпадающий список
-			$('.w-box select:not(.custom)').select2({
-				language: "ru"
-			});
+			$('.w-box select:not(.custom)').each(selectFn);
 			// Redactor
 			$('.w-box textarea.htmlText').redactor();
 		},

@@ -14,20 +14,26 @@ table {
 	tr td, tr th {
 		padding: 0.35rem 0.5rem;
 		border: 1px solid #dadada;
+		&[data-sorter] .sort-ind {
+			font-size: 0.85em;
+			margin-left: 0.4em;
+			color: @table-header-font-color;
+			.opacity(0.7);
+		}
 	}
 	tr th, table>thead>tr th {
-		background: #f3f3f3 !important;
+		background: @table-header-bgcolor !important;
 		background-clip: border-box;
-		color: #444444;
-		text-shadow: 0 1px 0 #fff;
+		color: @table-header-font-color;
+		text-shadow: 0 1px 0 lighten(@table-header-bgcolor, 5%);
 		white-space: nowrap;
 		padding: 0.5rem 0.5rem;
-		border: 1px solid #dadada;
+		border: 1px solid @table-header-bgcolor-light;
 		font-weight: normal;
 	}
-	/*	tr:nth-child(odd)>td {
-background-color: #f8f8f8;
-}*/
+	// tr:nth-child(odd)>td {
+	// 	background-color: #f8f8f8;
+	// }
 	tr:hover>td, tr:hover:nth-child(odd)>td {
 		background: #F0F6FF !important;
 		border-right-color: #CAD5E8 !important;
@@ -209,7 +215,7 @@ background-color: #f8f8f8;
 		border: none !important;
 		thead {
 			tr>th {
-				border: 1px solid #d0d0d0;
+				border: 1px solid @table-header-bgcolor-light;
 			}
 		}
 		tr {
