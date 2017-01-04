@@ -71,6 +71,7 @@ func projectAction(c *cli.Context) error {
 			"Title":      "Daily news",
 			"Menu":       "MainMenu",
 			"AddSearch":  true,
+			"AddSort":    true,
 			"AddTabs":    false,
 			"AddFilters": false,
 			"AddPages":   true,

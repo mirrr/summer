@@ -10,7 +10,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "summerGen"
 	app.Author = "Oleksiy Chechel (alex.mirrr@gmail.com)"
-	app.Version = "1.5.3"
+	app.Version = "1.5.6"
 	app.Commands = []cli.Command{
 		cli.Command{
 			Name:   "module",

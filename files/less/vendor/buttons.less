@@ -44,8 +44,10 @@ button, input[type=submit], input[type=reset], input[type=button], a.button {
 		display: inline-block;
 		vertical-align: middle;
 		text-align: center;
-		margin-bottom: -1px !important;
-		margin-top: -1px !important;
+		font-size: 1.1em !important;
+		&:before {
+			line-height: 2em;
+		}
 	}
 	&:disabled, &.disabled, &[disabled], &.locked {
 		.opacity(0.5);
@@ -64,7 +66,7 @@ button, input[type=submit], input[type=reset], input[type=button], a.button>span
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	max-width: 11em;
+	max-width: 14em;
 }
 
 a.button {
@@ -80,6 +82,7 @@ a.button {
 		content: "\203a";
 		position: absolute;
 		right: -1.3em;
+		line-height: 2.2em;
 		color: rgba(255, 255, 255, 0.5);
 	}
 	&>span.text {

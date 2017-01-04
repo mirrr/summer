@@ -7,12 +7,16 @@ body, html {
 }
 
 #content {
-	padding-top: 1.8rem;
-	padding-bottom: 3.5rem;
+	padding: 0;
 	background: #ffffff;
 	border-radius: 0.3em;
 	.box-shadow(0 0 5px 1px rgba(0, 0, 0, 0.05));
 	z-index: 1;
+	position: relative;
+}
+
+#inside-content {
+	padding: 1.8rem 1.2rem 2.6rem;
 	position: relative;
 	h1, h2, h3, h4, h5 {
 		color: #277399;
@@ -20,12 +24,12 @@ body, html {
 	}
 }
 
-#content>p:first-child {
+#inside-content>p:first-child {
 	padding-top: 0;
 	margin-top: 0;
 }
 
-#content>p:last-child {
+#inside-content>p:last-child {
 	padding-bottom: 0;
 	margin-bottom: 0;
 }

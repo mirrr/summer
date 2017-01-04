@@ -27,6 +27,10 @@ var (
 			Usage: "Add search mechanism",
 		},
 		cli.BoolFlag{
+			Name:  "add-sort",
+			Usage: "Add sort mechanism",
+		},
+		cli.BoolFlag{
 			Name:  "add-tabs",
 			Usage: "Add ajax tabs block",
 		},
@@ -63,7 +67,6 @@ var (
 		},
 		cli.StringFlag{
 			Name:  "title",
-			Value: "Summer App",
 			Usage: "Project title",
 		},
 		cli.StringFlag{

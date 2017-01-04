@@ -81,17 +81,14 @@ $(function () {
 			$('.back-to-top').fadeIn();
 		}
 
-		var contentSize = $('#inside-content').outerHeight() + 20
-		$('#content').height(contentSize);
-		var contentSpace = $('footer').offset().top - $('#content').offset().top - 20;
-		if (contentSize < contentSpace) {
-			$('#content').innerHeight(contentSpace);
-		}
+		var contentSize = $('#inside-content').outerHeight() - 5;
+		var contentSpace = $(window).height() - $('footer').outerHeight() - $('#content').offset().top - 5;
+		$('#content').innerHeight(Math.max(contentSpace, contentSize));
 	}
 
 	$(window).scroll(updatePage);
 	$(window).resize(updatePage);
-	setInterval(updatePage, 100);
+	setInterval(updatePage, 300);
 	updatePage();
 
 	$('.timepicker').each(function (index, el) {

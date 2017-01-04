@@ -32,6 +32,7 @@ func moduleAction(c *cli.Context) error {
 		"Title":      title,
 		"Menu":       menu,
 		"AddSearch":  c.Bool("add-search"),
+		"AddSort":    c.Bool("add-sort"),
 		"AddTabs":    c.Bool("add-tabs"),
 		"AddFilters": c.Bool("add-filters"),
 		"AddPages":   c.Bool("add-pages"),

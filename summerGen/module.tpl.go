@@ -111,8 +111,9 @@ func (m *{{.Name}}Module) Get(c *gin.Context) {
 }
 
 // GetAll records
-func (m *{{.Name}}Module) GetAll(c *gin.Context) { {{if or .AddSearch .AddPages .AddTabs}}
-	filter := struct { {{if .AddSearch}}
+func (m *{{.Name}}Module) GetAll(c *gin.Context) { {{if or .AddSort .AddSearch .AddPages .AddTabs}}
+	filter := struct { {{if .AddSort}}
+		Sort    string ` + "`" + `form:"sort"  json:"sort"` + "`" + `{{end}}{{if .AddSearch}}
 		Search  string ` + "`" + `form:"search"  json:"search"` + "`" + `{{end}}{{if .AddPages}}
 		Page    int    ` + "`" + `form:"page"  json:"page"` + "`" + `{{end}}{{if .AddTabs}}
 		Deleted bool   ` + "`" + `form:"deleted"  json:"deleted"` + "`" + `{{end}}
@@ -120,7 +121,14 @@ func (m *{{.Name}}Module) GetAll(c *gin.Context) { {{if or .AddSearch .AddPages 
 	summer.PostBind(c, &filter){{end}}
 	results := []{{.Name}}Struct{}
 	request := obj{"deleted": {{if .AddTabs}}filter.Deleted{{else}}false{{end}} }
-{{if .AddSearch}}
+{{if .AddSort}}
+	sort := "-_id"
+
+	// sort engine
+	if len(filter.Sort) > 0 {
+		sort = filter.Sort
+	}
+{{end}}{{if .AddSearch}}
 	// search engine
 	if len(filter.Search) > 0 {
 		regex := bson.RegEx{Pattern: filter.Search, Options: "i"}
@@ -140,7 +148,7 @@ func (m *{{.Name}}Module) GetAll(c *gin.Context) { {{if or .AddSearch .AddPages 
 	}
 {{end}}
 	// request to DB
-	if err := m.Collection.Find(request).Sort("-_id"){{if .AddPages}}.Limit(limit).Skip(skip){{end}}.All(&results); err != nil {
+	if err := m.Collection.Find(request).Sort({{if .AddSort}}sort{{else}}"-_id"{{end}}){{if .AddPages}}.Limit(limit).Skip(skip){{end}}.All(&results); err != nil {
 		c.String(404, "Not found")
 		return
 	}
@@ -175,8 +183,8 @@ func init() {
 		<thead>
 			<tr>
 				<th class="td-short">#</th>
-				<th>Name</th>
-				<th>Description</th>
+				<th{{if .AddSort}} data-sorter="name"{{end}}>Name</th>
+				<th{{if .AddSort}} data-sorter="description"{{end}}>Description</th>
 				<th>Created</th>
 				<th>Updated</th>
 				<th class="td-short">Actions</th>
@@ -216,13 +224,19 @@ $(function () {
 			success: updatePages{{end}}
 		});
 	}
-	update();{{if .AddSearch}}
+	update();{{if .AddSort}}
+
+	// Sort
+	$.tools.addSorterFn(function (name, direction) {
+		filter.sort = (direction === -1 ? '-' : '') + name;
+		update();
+	});{{end}}{{if .AddSearch}}
 
 	// Search
-	$.tools.searcher(function (value) {
+	$.tools.addSearchFn(function (value) {
 		filter.search = value;
 		update();
-	}){{end}}{{if .AddTabs}}
+	});{{end}}{{if .AddTabs}}
 
 	// Ajax tabs
 	$('div.tabs').on('change', function () {

@@ -11,22 +11,18 @@ import (
 )
 
 type (
-	authStruct struct {
+	auth struct {
 		collection *mgo.Collection
 		*Panel
 	}
 )
 
-var (
-	auth = authStruct{}
-)
-
-func (a *authStruct) Init(panel *Panel) {
+func (a *auth) init(panel *Panel) {
 	a.Panel = panel
 	a.collection = mongo.DB(panel.DBName).C(a.Panel.UsersCollection)
 }
 
-func (a *authStruct) Auth(g *gin.RouterGroup) {
+func (a *auth) Auth(g *gin.RouterGroup) {
 	if !a.DisableAuth {
 		g.Use(a.Login(g.BasePath()))
 		g.POST("/z-auth", dummy) // хак для авторизации
@@ -41,7 +37,7 @@ func (a *authStruct) Auth(g *gin.RouterGroup) {
 	g.GET("/logout", a.Logout(g.BasePath()))
 }
 
-func (a *authStruct) Logout(panelPath string) gin.HandlerFunc {
+func (a *auth) Logout(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		http.SetCookie(c.Writer, &http.Cookie{
 			Name:    a.AuthPrefix + "hash",
@@ -57,11 +53,11 @@ func (a *authStruct) Logout(panelPath string) gin.HandlerFunc {
 	}
 }
 
-func (a *authStruct) Login(panelPath string) gin.HandlerFunc {
+func (a *auth) Login(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// 	регистрация первого пользователя админки
-		if a.Users.Length() == 0 && !a.DisableFirstStart {
+		if a.users.Length() == 0 && !a.DisableFirstStart {
 			defer c.Abort()
 			login, e1 := c.GetPostForm("admin-z-login")
 			password, e2 := c.GetPostForm("admin-z-password")
@@ -70,7 +66,7 @@ func (a *authStruct) Login(panelPath string) gin.HandlerFunc {
 			if e1 && e2 && e3 {
 				if password == password2 {
 					if len(login) > 2 && len(password) > 5 {
-						if err := a.Users.Add(UsersStruct{
+						if err := a.users.Add(UsersStruct{
 							Login:    login,
 							Password: password,
 							Name:     strings.Title(login),
@@ -102,7 +98,7 @@ func (a *authStruct) Login(panelPath string) gin.HandlerFunc {
 		login, e1 := c.GetPostForm("admin-z-login")
 		password, e2 := c.GetPostForm("admin-z-password")
 		if e1 && e2 {
-			if user := a.Users.GetByLogin(login); user.Password == H3hash(password+a.AuthSalt) {
+			if user := a.users.GetByLogin(login); user.Password == H3hash(password+a.AuthSalt) {
 				setCookie(c, a.AuthPrefix+"login", login)
 				setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
 				c.String(200, "Ok")
@@ -115,7 +111,7 @@ func (a *authStruct) Login(panelPath string) gin.HandlerFunc {
 			login, e1 := c.Cookie(a.AuthPrefix + "login")
 			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
 			if e1 == nil && e2 == nil {
-				if user := a.Users.GetByLogin(login); hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
+				if user := a.users.GetByLogin(login); hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
 					if user.Root {
 						user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
 					}
