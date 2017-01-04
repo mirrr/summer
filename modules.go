@@ -97,7 +97,7 @@ func (m *Module) Websockets(c *gin.Context) {
 
 // Page is default module's page rendering method
 func (m *Module) Page(c *gin.Context) {
-	c.HTML(200, m.Settings.TemplateName+".html", obj{"title": m.Settings.Title, "action": c.Param("action")})
+	c.HTML(200, m.Settings.TemplateName+".html", obj{})
 }
 
 // Init is default module's initial method
