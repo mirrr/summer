@@ -24,16 +24,16 @@ type (
 		Demo     bool
 	}
 	users struct {
-		panel      *Panel
 		list       map[string]*UsersStruct // key - login
 		collection *mgo.Collection
 		sync.Mutex
+		*Panel
 	}
 )
 
 func (u *users) init(panel *Panel) {
 	u.Mutex = sync.Mutex{}
-	u.panel = panel
+	u.Panel = panel
 	u.collection = mongo.DB(panel.DBName).C(panel.UsersCollection)
 	u.list = map[string]*UsersStruct{}
 	go func() {
@@ -46,8 +46,8 @@ func (u *users) init(panel *Panel) {
 
 // Add new user from struct
 func (u *users) Add(user UsersStruct) error {
-	user.ID = ai.Next(u.panel.UsersCollection)
-	user.Password = H3hash(user.Password + u.panel.AuthSalt)
+	user.ID = ai.Next(u.Panel.UsersCollection)
+	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
 	user.Created = uint(time.Now().Unix() / 60)
 	user.Updated = user.Created
 
@@ -82,7 +82,7 @@ func (u *users) GetByLogin(login string) *UsersStruct {
 	u.Lock()
 	defer u.Unlock()
 	user, exists := u.list[login]
-	if u.panel.DisableAuth || !exists {
+	if u.Panel.DisableAuth || !exists {
 		us := getDummyUser(login)
 		user = &us
 	}

@@ -33,7 +33,7 @@
 		{{ range site "css" }}<link rel="stylesheet" href="{{.}}">{{ end }}
 		<style>
 			.w-title:before {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
-			@media (min-width:1010px) {.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}}
+			.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
 			.w-wrap {background-image: url("{{site "path"}}/pkgFiles/images/bg.png");}
 		</style>
 	</head>

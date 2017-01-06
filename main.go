@@ -27,7 +27,9 @@ type (
 		DBName            string // MongoDB database name
 		DefaultPage       string
 		Language          string
-		UsersCollection   string
+		UsersCollection   string // collection for panel's users
+		NotifyCollection  string // collection for panel's notifications
+		AICollection      string // collection for AUTO_INCREMENT
 		Debug             bool
 		Vars              map[string]interface{}
 		TFuncMap          template.FuncMap
