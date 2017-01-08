@@ -22,6 +22,8 @@
 	max-width: 85%;
 	background: #ffffff;
 	.box-shadow(0 4px 60px rgba(0, 0, 0, 0.3), 0 0 5px rgba(0, 0, 0, 0.1));
+	.box-sizing(content);
+	.box-sizing(content-box);
 	position: relative;
 	font-size: 100%;
 	color: #4D4D4D;
@@ -62,10 +64,17 @@
 }
 
 .w-content-body {
-	padding: 20px 25px;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
+	padding: 1rem 1.2rem;
+}
+
+.w-content-body .form-footer {
+	margin: 1.2rem -1.2rem -1rem !important;
+	.box-sizing(content);
+	.box-sizing(content-box);
+}
+
+.w-content-body .form-footer.required {
+	margin-top: 3rem !important;
 }
 
 .w-content table {
@@ -139,4 +148,18 @@
 
 .w-blured {
 	.blur(2px);
+}
+
+
+/* Confirm Window */
+
+.summer-confirm div {
+	width: 17rem;
+}
+
+@media (max-width:1009px) {
+	.summer-confirm div {
+		width: 95%;
+		max-width: 30rem;
+	}
 }

@@ -15,14 +15,14 @@
 	(function ($) {
 		$.tools = function () {};
 		$.tools.addButton = function (obj, onclick) {
-			if (typeof obj.onClick !== "undefined") {
+			if (typeof obj.onClick !== 'undefined') {
 				onclick = obj.onClick;
 				delete obj.onClick;
 			}
 			var $button = $('<button/>', obj);
-			$("#right-panel>div").append($button);
+			$('#right-panel>div').append($button);
 			if ($.isFunction(onclick)) {
-				$button.on("click", function (event) {
+				$button.on('click', function (event) {
 					event = event || window.event;
 					event.preventDefault();
 					onclick(this, event);
@@ -31,11 +31,13 @@
 			}
 			return $button;
 		};
+
 		$.tools.addLink = function (obj) {
 			$link = $.tools.createBoxLink(obj);
 			$('#right-panel>div').append($link);
 			return $link;
 		};
+
 		$.tools.addSorterFn = function (fn) {
 			if ($.isFunction(fn)) {
 				$(window).on('table-sorter', function (event, name, direction) {
@@ -43,6 +45,7 @@
 				});
 			}
 		};
+
 		$.tools.createBoxLink = function (obj) {
 			var $link = $('<a/>', obj);
 			$link.attr({
@@ -55,12 +58,36 @@
 			return $link;
 		};
 
-		var oldText = "";
+		$.tools.confirm = function (title, text, callback, target) {
+			if (typeof callback !== 'function') {
+				throw new Error('Not specified handler function');
+			}
+			$confirm = $('<div />', {
+				'class': 'summer-confirm'
+			});
+			$confirm.html('<div class="w-title unselectable">' + title +
+				'</div>' + (text ? '<div class="w-content-body">' + text + '</div>' : '') +
+				'<div class="form-footer"><button type="cancel" class="shwark-close">Cancel</button>' +
+				'<button type="submit">OK</button></div>')
+
+			close = shwOpen(null, {
+					wrapperBackground: 'rgba(0,0,0,0.3)',
+					wrapperClass: 'summer-confirm-wrapper'
+				}, target,
+				$confirm
+			)
+			$confirm.find('button[type="submit"]').click(function () {
+				setTimeout(close, 1);
+				callback();
+			});
+		};
+
+		var oldText = '';
 		var timerId = null;
 		$.tools.addSearchFn = $.tools.searcher = function (onChange) {
 			var $search = $('input[type=text].allsearch');
-			if ($search.length && !$search.parent(".li-search").is(":visible")) {
-				$search.parent(".li-search").show();
+			if ($search.length && !$search.parent('.li-search').is(':visible')) {
+				$search.parent('.li-search').show();
 				$search.on('keyup', function (e) {
 					if (oldText !== $search.val()) {
 						if (timerId) {
@@ -83,7 +110,7 @@ $(function () {
 		$('#content th[data-sorter]').data('sort-direction', 0)
 			.find('.sort-ind').removeClass('fa-caret-down').removeClass('fa-caret-up').addClass('fa-unsorted');
 	}
-	$("#content th[data-sorter]").each(function (index, el) {
+	$('#content th[data-sorter]').each(function (index, el) {
 		$(el).css({
 			'font-weight': 'bold',
 			'cursor': 'pointer'

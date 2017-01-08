@@ -215,16 +215,27 @@
 	 *
 	 * @param  {Function} func
 	 */
-	$.fn.forceClick = function (func) {
+	$.fn.forceClick = function (func, target) {
 		if (typeof func !== 'function') {
-			throw new Error('Не указана функция - обработчик');
+			throw new Error('Not specified handler function');
+		}
+		if (!target) {
+			target = $('body');
+		} else {
+			target = $(target);
 		}
 
-		$('body').off('click', this.selector);
-		$('body').on('click', this.selector, function (event) {
+		target.off('click', this.selector);
+		target.on('click', this.selector, function (event) {
 			event = event || window.event;
 			event.preventDefault();
-			func.call(this, event);
+			if ($(this).hasClass('need-confirm')) {
+				$.tools.confirm('Are you sure?', 'Are you sure that your want to perfom this action?', function () {
+					func.call(this, event);
+				}, $(this));
+			} else {
+				func.call(this, event);
+			}
 			return false;
 		});
 		return this;
