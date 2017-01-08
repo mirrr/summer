@@ -1,6 +1,8 @@
 function shwOpen(template, options, $this, content) {
 	if (!$this) {
 		$this = $('body')
+		options.toRight = false;
+		options.toDown = false;
 	} else {
 		$this = $($this)
 	}
@@ -49,7 +51,7 @@ function shwOpen(template, options, $this, content) {
 	var $wrapper = $('<div class="shwark-wrapper"></div>');
 	var $circle = $('<div class="shwark-reddot"></div>');
 	var $circleIn = $('<div class="shwark-in-reddot"></div>');
-	var $button = $this;
+	var $button = $this || $wrapper;
 	var $target = options.target === 'body' ? $wrapper : (
 		$(options.target).length ? $($(options.target).get(0)) : $button
 	);
