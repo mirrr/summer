@@ -328,9 +328,9 @@ $(function () {
 	<td class="td-short">
 		<span class="fa fa-pencil edit" title="Edit"></span>{{if .AddTabs}}
 	{{"{{"}}? it.deleted {{"}}"}}
-		<span class="fa fa-mail-reply-all restore"  data-action="restore"></span>
+		<span class="fa fa-mail-reply-all restore need-confirm"  data-action="restore"></span>
 	{{"{{"}}??{{"}}"}}{{end}}
-		<span class="fa fa-trash remove" title="Remove" data-action="remove"></span>{{if .AddTabs}}
+		<span class="fa fa-trash remove need-confirm" title="Remove" data-action="remove"></span>{{if .AddTabs}}
 	{{"{{"}}?{{"}}"}}
 {{end}}
 	</td>
