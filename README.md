@@ -32,6 +32,8 @@ go build
 ### Result: 
 ![summer](https://cloud.githubusercontent.com/assets/2770221/21749479/7d293c42-d5d1-11e6-846a-654afbf1288a.png)
 
+or with another design theme:
+![summer2](https://cloud.githubusercontent.com/assets/2770221/21749543/008a935a-d5d3-11e6-97ee-fc815c8cdf43.png)
 
 ## Examples
 Coming soon...
