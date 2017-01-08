@@ -230,7 +230,7 @@
 			event = event || window.event;
 			event.preventDefault();
 			if ($(this).hasClass('need-confirm')) {
-				$.tools.confirm('Are you sure?', 'Are you sure that your want to perfom this action?', function () {
+				$.tools.confirm('Are you sure?', 'Are you sure that you want to perform this action?', function () {
 					func.call(this, event);
 				}, $(this));
 			} else {
