@@ -20,7 +20,12 @@
 		<link rel="shortcut icon" href="{{site "path"}}/pkgFiles/favicon.ico">
 		<link rel="icon" sizes="192x192" href="{{site "path"}}/pkgFiles/favicon192x192.png">
 		<title>{{ $tabs.title }}{{ if not (eq (site "title") $tabs.title) }} - {{ site "title" }}{{ end }}</title>
-		<link rel="stylesheet" href="{{site "path"}}/pkgFiles/build/style.css">
+		<style type="text/css">
+			@import url("{{site "path"}}/pkgFiles/build/style.css.gz");
+			.w-title:before {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
+			.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
+			.w-wrap {background-image: url("{{site "path"}}/pkgFiles/images/bg.png");}
+		</style>
 		<script type="text/javascript">
 			window.panelPath="{{site "path"}}/";
 			window.moduleName="{{site "module"}}";
@@ -28,14 +33,9 @@
 			window.ajaxUrl = '{{site "path"}}/ajax/{{site "ajax"}}/';
 			window.socketUrl = '{{site "path"}}/websocket/{{site "socket"}}/';
 		</script>
-		<script type="text/javascript" src="{{site "path"}}/pkgFiles/build/main.js"></script>
+		<script type="text/javascript" src="{{site "path"}}/pkgFiles/build/main.js.gz"></script>
 		{{ range site "js" }}<script type="text/javascript" src="{{.}}"></script>{{ end }}
 		{{ range site "css" }}<link rel="stylesheet" href="{{.}}">{{ end }}
-		<style>
-			.w-title:before {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
-			.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
-			.w-wrap {background-image: url("{{site "path"}}/pkgFiles/images/bg.png");}
-		</style>
 	</head>
 
 	<body>
@@ -102,7 +102,7 @@
 		<a name="top"></a>
 		<div class="container">
 			<div class="navbar-header">
-				<a class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+				<a class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
 					<span class="fa fa-ellipsis-dots-v"></span>
 				</a>
 				<a class="navbar-brand" href="{{if var "path"}}{{var "path"}}{{ else }}/{{ end }}"><span class="fa fa-home-2"></span> </a>

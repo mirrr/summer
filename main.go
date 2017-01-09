@@ -122,11 +122,12 @@ func (panel *Panel) Init() {
 		// init autoincrement module
 		ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
-		// включение статических файлов
+		// static files
+		panel.Engine.Use(gzipper)
 		panel.Engine.Static(panel.Path+"/files", panel.Files)
 		panel.Engine.Static(panel.Path+"/pkgFiles", PackagePath()+"/files")
 
-		// включение основной роут-группы
+		// main rout group
 		panel.RouterGroup = panel.Engine.Group(panel.Path)
 		panel.auth.Auth(panel.RouterGroup)
 		panel.RouterGroup.GET("/", func(c *gin.Context) {
@@ -135,7 +136,7 @@ func (panel *Panel) Init() {
 			c.Redirect(301, panel.Path+panel.DefaultPage)
 		})
 
-		// запуск веб-сервера
+		// starting web-server
 		go func() {
 			panic(panel.Engine.Run(":" + types.String(panel.Port)))
 		}()

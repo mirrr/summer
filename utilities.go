@@ -178,3 +178,29 @@ func checkRights(panel *Panel, modR Rights, usrR Rights) bool {
 
 	return rightsEmpty || allow
 }
+
+func gzipper(c *gin.Context) {
+	filepath := c.Param("filepath")
+
+	if len(filepath) > 0 &&
+		strings.HasSuffix(filepath, ".gz") &&
+		strings.Contains(c.Request.Header.Get("Accept-Encoding"), "gzip") {
+
+		c.Header("Content-Encoding", "gzip")
+		c.Header("Vary", "Accept-Encoding")
+		if strings.HasSuffix(c.Param("filepath"), ".css.gz") {
+			c.Header("Content-Type", "text/css; charset=utf-8")
+		} else if strings.HasSuffix(c.Param("filepath"), ".js.gz") {
+			c.Header("Content-Type", "application/x-javascript")
+		}
+		return
+	}
+
+	if strings.HasSuffix(filepath, ".gz") {
+		path0 := PackagePath() + "/files" + filepath[:len(filepath)-3]
+		fmt.Println(path0)
+		c.File(path0)
+		c.Abort()
+		return
+	}
+}

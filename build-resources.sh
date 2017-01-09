@@ -30,7 +30,6 @@ compileLogin=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/jquery.easing.1.3.min.js" \
 "${vendor}/jquery.message.js" \
 "${vendor}/nprogress.js" \
-"${vendor}/jquery.tools.js" \
 "${vendor}/jquery.ajaxHelper.js")
 
 uglifyjs --source-map "${build}/main.js.map" --source-map-root "/" --source-map-url "/${build}/main.js.map" -o "${build}/main.js" $compile "files/js/common.js"
@@ -42,3 +41,7 @@ lessc --clean-css="--s1 --advanced --compatibility=ie8" style.less > ../build/st
 lessc --clean-css="--s1 --advanced --compatibility=ie8" login.less > ../build/login.css
 cd ../..
 
+gzip "${build}/main.js" -c > "${build}/main.js.gz"
+gzip "${build}/login.js" -c > "${build}/login.js.gz"
+gzip "${build}/style.css" -c > "${build}/style.css.gz"
+gzip "${build}/login.css" -c > "${build}/login.css.gz"
