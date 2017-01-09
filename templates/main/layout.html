@@ -21,7 +21,7 @@
 		<link rel="icon" sizes="192x192" href="{{site "path"}}/pkgFiles/favicon192x192.png">
 		<title>{{ $tabs.title }}{{ if not (eq (site "title") $tabs.title) }} - {{ site "title" }}{{ end }}</title>
 		<style type="text/css">
-			@import url("{{site "path"}}/pkgFiles/build/style.css.gz");
+			@import url("{{site "path"}}/pkgFiles/build/style.css");
 			.w-title:before {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
 			.navbar-default {background-image: url("{{site "path"}}/pkgFiles/images/title.png");}
 			.w-wrap {background-image: url("{{site "path"}}/pkgFiles/images/bg.png");}
@@ -33,7 +33,7 @@
 			window.ajaxUrl = '{{site "path"}}/ajax/{{site "ajax"}}/';
 			window.socketUrl = '{{site "path"}}/websocket/{{site "socket"}}/';
 		</script>
-		<script type="text/javascript" src="{{site "path"}}/pkgFiles/build/main.js.gz"></script>
+		<script type="text/javascript" src="{{site "path"}}/pkgFiles/build/main.js"></script>
 		{{ range site "js" }}<script type="text/javascript" src="{{.}}"></script>{{ end }}
 		{{ range site "css" }}<link rel="stylesheet" href="{{.}}">{{ end }}
 	</head>

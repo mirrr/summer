@@ -180,27 +180,23 @@ func checkRights(panel *Panel, modR Rights, usrR Rights) bool {
 }
 
 func gzipper(c *gin.Context) {
-	filepath := c.Param("filepath")
+	filepath := stripSlashes(c.Param("filepath"))
+	if len(filepath) != 0 && strings.Contains(c.Request.Header.Get("Accept-Encoding"), "gzip") {
+		switch filepath {
+		case "build/login.css", "build/login.js", "build/main.js", "build/style.css":
+			c.Header("Content-Encoding", "gzip")
+			c.Header("Vary", "Accept-Encoding")
 
-	if len(filepath) > 0 &&
-		strings.HasSuffix(filepath, ".gz") &&
-		strings.Contains(c.Request.Header.Get("Accept-Encoding"), "gzip") {
-
-		c.Header("Content-Encoding", "gzip")
-		c.Header("Vary", "Accept-Encoding")
-		if strings.HasSuffix(c.Param("filepath"), ".css.gz") {
-			c.Header("Content-Type", "text/css; charset=utf-8")
-		} else if strings.HasSuffix(c.Param("filepath"), ".js.gz") {
-			c.Header("Content-Type", "application/x-javascript")
+			if strings.HasSuffix(c.Param("filepath"), ".css") {
+				c.Header("Content-Type", "text/css; charset=utf-8")
+			} else if strings.HasSuffix(c.Param("filepath"), ".js") {
+				c.Header("Content-Type", "application/x-javascript")
+			}
+			path0 := PackagePath() + "/files/" + filepath + ".gz"
+			c.File(path0)
+			c.Abort()
+			return
 		}
-		return
 	}
 
-	if strings.HasSuffix(filepath, ".gz") {
-		path0 := PackagePath() + "/files" + filepath[:len(filepath)-3]
-		fmt.Println(path0)
-		c.File(path0)
-		c.Abort()
-		return
-	}
 }
