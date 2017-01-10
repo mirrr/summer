@@ -46,7 +46,7 @@ type (
 
 	// Simple module interface
 	Simple interface {
-		Init(settings *ModuleSettings, panel *Panel)
+		init(settings *ModuleSettings, panel *Panel)
 		Page(c *gin.Context)
 		Ajax(c *gin.Context)
 		Websockets(c *gin.Context)
@@ -97,8 +97,8 @@ func (m *Module) Page(c *gin.Context) {
 	c.HTML(200, m.Settings.TemplateName+".html", obj{})
 }
 
-// Init is default module's initial method
-func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
+// default module's initial method
+func (m *Module) init(settings *ModuleSettings, panel *Panel) {
 	m.Settings = settings
 	m.Panel = panel
 	if m.Collection == nil {
@@ -205,7 +205,7 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 	socketGroup.Use(preAllow)
 	socketGroup.GET("/*method", s.Websockets)
 
-	s.Init(settings, panel)
+	s.init(settings, panel)
 	panel.Modules.add(s)
 	return s
 }
