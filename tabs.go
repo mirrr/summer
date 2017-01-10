@@ -31,19 +31,18 @@ func (slice tabs) Swap(i, j int) {
 }
 
 func getTabs(panel *Panel, name string, u *UsersStruct) interface{} {
-	modulesListMu.Lock()
 	tabsList := tabs{}
-	if modulesList[name] == nil {
+	current, ex := panel.Modules.Get(name)
+	if !ex {
 		return obj{"title": name, "icon": "", "list": tabsList}
 	}
 
-	current := modulesList[name]
 	parent := current
 	if current.GetSettings().GroupTo != nil {
 		parent = current.GetSettings().GroupTo
 	}
 	if checkRights(panel, parent.GetSettings().Rights, u.Rights) {
-		for _, module := range modulesList {
+		for _, module := range panel.Modules.GetList() {
 			sett := module.GetSettings()
 			if sett.GroupTo == parent && checkRights(panel, sett.Rights, u.Rights) {
 				tabsList = append(tabsList, &tab{
@@ -55,7 +54,7 @@ func getTabs(panel *Panel, name string, u *UsersStruct) interface{} {
 			}
 		}
 	}
-	modulesListMu.Unlock()
+
 	sort.Sort(tabsList)
 	if len(tabsList) > 0 {
 		tabsList = append(tabs{&tab{

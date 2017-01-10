@@ -79,8 +79,8 @@ func getMenuItems(panel *Panel, m *Menu, u *UsersStruct) menuItems {
 		}
 	}
 	menuListMu.Unlock()
-	modulesListMu.Lock()
-	for _, module := range modulesList {
+
+	for _, module := range panel.Modules.GetList() {
 		sett := module.GetSettings()
 		msr := sett.Rights
 		rightsEmpty := len(msr.Groups) == 0 && len(msr.Actions) == 0
@@ -96,7 +96,7 @@ func getMenuItems(panel *Panel, m *Menu, u *UsersStruct) menuItems {
 			})
 		}
 	}
-	modulesListMu.Unlock()
+
 	sort.Sort(menuItemsList)
 	return menuItemsList
 }

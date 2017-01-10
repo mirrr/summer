@@ -4,7 +4,6 @@ import (
 	"gopkg.in/night-codes/types.v1"
 	"reflect"
 	"strings"
-	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/night-codes/mgo-wrapper"
@@ -20,7 +19,7 @@ type (
 
 	//Module struct
 	Module struct {
-		Panel
+		*Panel
 		Collection *mgo.Collection
 		Settings   *ModuleSettings
 	}
@@ -56,9 +55,7 @@ type (
 )
 
 var (
-	modulesList   = map[string]Simple{}
-	modulesListMu = sync.Mutex{}
-	wsupgrader    = websocket.Upgrader{
+	wsupgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
@@ -103,7 +100,7 @@ func (m *Module) Page(c *gin.Context) {
 // Init is default module's initial method
 func (m *Module) Init(settings *ModuleSettings, panel *Panel) {
 	m.Settings = settings
-	m.Panel = *panel
+	m.Panel = panel
 	if m.Collection == nil {
 		m.Collection = mongo.DB(panel.DBName).C(settings.CollectionName)
 	}
@@ -117,11 +114,10 @@ func (m *Module) GetSettings() *ModuleSettings {
 // Create new module
 func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 
-	modulesListMu.Lock()
-	if settings.Name == "" || modulesList[settings.Name] != nil {
+	if _, ex := panel.Modules.Get(settings.Name); ex {
 		panic(`Repeated use of module name "` + settings.Name + `"`)
 	}
-	modulesListMu.Unlock()
+
 	if settings.Ajax == nil {
 		settings.Ajax = Func{}
 	}
@@ -210,9 +206,6 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 	socketGroup.GET("/*method", s.Websockets)
 
 	s.Init(settings, panel)
-
-	modulesListMu.Lock()
-	modulesList[settings.Name] = s
-	modulesListMu.Unlock()
+	panel.Modules.add(s)
 	return s
 }

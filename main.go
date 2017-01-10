@@ -53,10 +53,13 @@ type (
 		DropMenu *Menu
 		// Groups
 		Groups *GroupsList
+		// Modules
+		Modules *ModuleList
+		// Users
+		Users *Users
 
-		users *users
-		auth  *auth
-		init  bool
+		auth *auth
+		init bool
 	}
 )
 
@@ -93,8 +96,9 @@ func Create(s Settings) *Panel {
 		RootMenu: rootMenu,
 		MainMenu: rootMenu.Add("[Main]"),
 		DropMenu: rootMenu.Add("[Drop]"),
-		Groups:   &GroupsList{},
-		users:    new(users),
+		Groups:   new(GroupsList),
+		Modules:  new(ModuleList),
+		Users:    new(Users),
 		auth:     new(auth),
 	}
 	// apply default settings
@@ -113,7 +117,8 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 func (panel *Panel) Init() {
 	if !panel.init {
 		panel.init = true
-		panel.users.init(panel)
+		panel.Modules.init()
+		panel.Users.init(panel)
 		panel.auth.init(panel)
 		panel.correctPath()
 		panel.setVariables()
@@ -150,7 +155,10 @@ func (panel *Panel) initTpl() {
 
 	panel.TFuncMap["jsoner"] = jsoner
 	panel.TFuncMap["menu"] = getMenuItems
-	panel.TFuncMap["user"] = panel.users.GetByLogin
+	panel.TFuncMap["user"] = func(login string) (user *UsersStruct) {
+		user, _ = panel.Users.GetByLogin(login)
+		return
+	}
 	panel.TFuncMap["tabs"] = getTabs
 	panel.TFuncMap["site"] = getSite
 	panel.TFuncMap["var"] = func(key string) interface{} {
@@ -187,6 +195,6 @@ func (panel *Panel) correctPath() {
 
 func Wait() {
 	for {
-		time.Sleep(time.Second)
+		time.Sleep(time.Hour)
 	}
 }

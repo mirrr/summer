@@ -57,7 +57,7 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// 	регистрация первого пользователя админки
-		if a.users.Length() == 0 && !a.DisableFirstStart {
+		if a.Users.Length() == 0 && !a.DisableFirstStart {
 			defer c.Abort()
 			login, e1 := c.GetPostForm("admin-z-login")
 			password, e2 := c.GetPostForm("admin-z-password")
@@ -66,7 +66,7 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 			if e1 && e2 && e3 {
 				if password == password2 {
 					if len(login) > 2 && len(password) > 5 {
-						if err := a.users.Add(UsersStruct{
+						if err := a.Users.Add(UsersStruct{
 							Login:    login,
 							Password: password,
 							Name:     strings.Title(login),
@@ -98,7 +98,7 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 		login, e1 := c.GetPostForm("admin-z-login")
 		password, e2 := c.GetPostForm("admin-z-password")
 		if e1 && e2 {
-			if user := a.users.GetByLogin(login); user.Password == H3hash(password+a.AuthSalt) {
+			if user, exists := a.Users.GetByLogin(login); exists && user.Password == H3hash(password+a.AuthSalt) {
 				setCookie(c, a.AuthPrefix+"login", login)
 				setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
 				c.String(200, "Ok")
@@ -111,7 +111,7 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 			login, e1 := c.Cookie(a.AuthPrefix + "login")
 			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
 			if e1 == nil && e2 == nil {
-				if user := a.users.GetByLogin(login); hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
+				if user, exists := a.Users.GetByLogin(login); exists && hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
 					if user.Root {
 						user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
 					}
