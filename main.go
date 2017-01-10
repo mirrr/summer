@@ -59,7 +59,6 @@ type (
 		Users *Users
 
 		auth *auth
-		init bool
 	}
 )
 
@@ -103,7 +102,7 @@ func Create(s Settings) *Panel {
 	}
 	// apply default settings
 	extend(&panel.Settings, &s)
-	panel.Init()
+	panel.init()
 
 	return &panel
 }
@@ -113,39 +112,36 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	return createModule(panel, settings, s)
 }
 
-// Init panel (Auto runned after Create func.)
-func (panel *Panel) Init() {
-	if !panel.init {
-		panel.init = true
-		panel.Modules.init()
-		panel.Users.init(panel)
-		panel.auth.init(panel)
-		panel.correctPath()
-		panel.setVariables()
-		panel.initTpl()
+// initial method for *Panel
+func (panel *Panel) init() {
+	panel.Modules.init()
+	panel.Users.init(panel)
+	panel.auth.init(panel)
+	panel.correctPath()
+	panel.setVariables()
+	panel.initTpl()
 
-		// init autoincrement module
-		ai.Connect(mongo.DB(panel.DBName).C("ai"))
+	// init autoincrement module
+	ai.Connect(mongo.DB(panel.DBName).C("ai"))
 
-		// static files
-		panel.Engine.Use(gzipper)
-		panel.Engine.Static(panel.Path+"/files", panel.Files)
-		panel.Engine.Static(panel.Path+"/pkgFiles", PackagePath()+"/files")
+	// static files
+	panel.Engine.Use(gzipper)
+	panel.Engine.Static(panel.Path+"/files", panel.Files)
+	panel.Engine.Static(panel.Path+"/pkgFiles", PackagePath()+"/files")
 
-		// main rout group
-		panel.RouterGroup = panel.Engine.Group(panel.Path)
-		panel.auth.Auth(panel.RouterGroup)
-		panel.RouterGroup.GET("/", func(c *gin.Context) {
-			c.Header("Expires", time.Now().String())
-			c.Header("Cache-Control", "no-cache")
-			c.Redirect(301, panel.Path+panel.DefaultPage)
-		})
+	// main rout group
+	panel.RouterGroup = panel.Engine.Group(panel.Path)
+	panel.auth.Auth(panel.RouterGroup)
+	panel.RouterGroup.GET("/", func(c *gin.Context) {
+		c.Header("Expires", time.Now().String())
+		c.Header("Cache-Control", "no-cache")
+		c.Redirect(301, panel.Path+panel.DefaultPage)
+	})
 
-		// starting web-server
-		go func() {
-			panic(panel.Engine.Run(":" + types.String(panel.Port)))
-		}()
-	}
+	// starting web-server
+	go func() {
+		panic(panel.Engine.Run(":" + types.String(panel.Port)))
+	}()
 }
 
 func (panel *Panel) initTpl() {
