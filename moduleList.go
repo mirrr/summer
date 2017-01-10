@@ -12,9 +12,11 @@ type (
 	}
 )
 
-func (m *ModuleList) init() {
+func createModuleList() *ModuleList {
+	m := &ModuleList{}
 	m.Mutex = sync.Mutex{}
 	m.list = map[string]Simple{}
+	return m
 }
 
 // Get one module by name
@@ -32,7 +34,7 @@ func (m *ModuleList) add(module Simple) {
 	m.list[module.GetSettings().Name] = module
 }
 
-// GetList one module by name
+// GetList returns modules list
 func (m *ModuleList) GetList() map[string]Simple {
 	m.Lock()
 	defer m.Unlock()

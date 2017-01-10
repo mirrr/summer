@@ -2,12 +2,12 @@ package summer
 
 import (
 	"sort"
-	"sync"
 )
 
 type (
 	//Menu struct
 	Menu struct {
+		panel  *Panel
 		Title  string
 		Order  int
 		Parent *Menu
@@ -24,11 +24,6 @@ type (
 	}
 
 	menuItems []*menuItem
-)
-
-var (
-	menusList  = []*Menu{}
-	menuListMu = sync.Mutex{}
 )
 
 func (slice menuItems) Len() int {
@@ -49,15 +44,18 @@ func (slice menuItems) Swap(i, j int) {
 	slice[i], slice[j] = slice[j], slice[i]
 }
 
+func (m *Menu) init(panel *Panel, parent *Menu) {
+	m.panel = panel
+	m.Parent = parent
+}
+
 // Add submenu to current menu
 func (m *Menu) Add(title string, order ...int) *Menu {
-	menu := &Menu{Title: title, Parent: m}
+	menu := &Menu{Title: title, Parent: m, panel: m.panel}
 	if len(order) > 0 {
 		menu.Order = order[0]
 	}
-	menuListMu.Lock()
-	menusList = append(menusList, menu)
-	menuListMu.Unlock()
+	m.panel.menuList.Add(menu)
 	return menu
 }
 
@@ -65,8 +63,8 @@ func getMenuItems(panel *Panel, m *Menu, u *UsersStruct) menuItems {
 	userActions := uniqAppend(panel.Groups.Get(u.Rights.Groups...), u.Rights.Actions)
 
 	menuItemsList := menuItems{}
-	menuListMu.Lock()
-	for _, menu := range menusList {
+
+	for _, menu := range m.panel.menuList.GetList() {
 		if menu.Parent == m {
 			menuItemsList = append(menuItemsList, &menuItem{
 				Order:   menu.Order,
@@ -78,7 +76,6 @@ func getMenuItems(panel *Panel, m *Menu, u *UsersStruct) menuItems {
 			})
 		}
 	}
-	menuListMu.Unlock()
 
 	for _, module := range panel.Modules.GetList() {
 		sett := module.GetSettings()

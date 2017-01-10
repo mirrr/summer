@@ -58,7 +58,8 @@ type (
 		// Users
 		Users *Users
 
-		auth *auth
+		auth     *auth
+		menuList *menuList
 	}
 )
 
@@ -72,7 +73,6 @@ func Create(s Settings) *Panel {
 		gin.SetMode(gin.ReleaseMode)
 		engine = gin.New()
 	}
-	rootMenu := &Menu{Title: "[Root]"}
 	panel := Panel{
 		Settings: Settings{
 			Port:            8080,
@@ -92,11 +92,12 @@ func Create(s Settings) *Panel {
 			FirstStart:      func() {},
 			Engine:          engine,
 		},
-		RootMenu: rootMenu,
-		MainMenu: rootMenu.Add("[Main]"),
-		DropMenu: rootMenu.Add("[Drop]"),
+		menuList: createMenuList(),
+		Modules:  createModuleList(),
+		RootMenu: &Menu{Title: "[Root]"},
+		MainMenu: &Menu{Title: "[Main]"},
+		DropMenu: &Menu{Title: "[Drop]"},
 		Groups:   new(GroupsList),
-		Modules:  new(ModuleList),
 		Users:    new(Users),
 		auth:     new(auth),
 	}
@@ -107,16 +108,20 @@ func Create(s Settings) *Panel {
 	return &panel
 }
 
-// AddModule provide adding new panel module
+// AddModule provide adding new module to Panel
 func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	return createModule(panel, settings, s)
 }
 
 // initial method for *Panel
 func (panel *Panel) init() {
-	panel.Modules.init()
+	panel.RootMenu.init(panel, nil)
+	panel.MainMenu.init(panel, panel.RootMenu)
+	panel.DropMenu.init(panel, panel.RootMenu)
+
 	panel.Users.init(panel)
 	panel.auth.init(panel)
+
 	panel.correctPath()
 	panel.setVariables()
 	panel.initTpl()
