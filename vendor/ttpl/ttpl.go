@@ -188,8 +188,16 @@ func parseFiles(t *template.Template, dotPath string, path string, filenames ...
 			}
 		}
 
+		header := `{{template "header" .}}`
+		footer := `{{template "footer" .}}`
+		if strings.Contains(s, "SUMMER-NO-HEADER") {
+			header := ""
+		}
+		if strings.Contains(s, "SUMMER-NO-FOOTER") {
+			footer := ""
+		}
 		if name != "layout.html" && name != "login.html" && name != "firstStart.html" {
-			s = `{{template "header" .}}` + s + `{{template "footer" .}}`
+			s = header + s +
 		}
 
 		var tmpl *template.Template
