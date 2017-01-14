@@ -109,6 +109,33 @@ func (panel *Panel) AddModule(settings *ModuleSettings, s Simple) Simple {
 	return createModule(panel, settings, s)
 }
 
+// AddPage provide adding simple page module to Panel
+func (panel *Panel) AddPage(name string, title string, menu *Menu, originTemplate ...bool) Simple {
+	settings := &ModuleSettings{
+		Name:  name,
+		Title: title,
+		Menu:  menu,
+	}
+	if len(originTemplate) > 0 {
+		settings.OriginTemplate = originTemplate[0]
+	}
+	return panel.AddModule(settings, &Module{})
+}
+
+// AddPage provide adding simple page without authorization
+func (panel *Panel) AddOpenPage(name string, title string, menu *Menu, originTemplate ...bool) Simple {
+	settings := &ModuleSettings{
+		Name:        name,
+		Title:       title,
+		Menu:        menu,
+		DisableAuth: true,
+	}
+	if len(originTemplate) > 0 {
+		settings.OriginTemplate = originTemplate[0]
+	}
+	return panel.AddModule(settings, &Module{})
+}
+
 // initial method for *Panel
 func (panel *Panel) init() {
 	panel.RootMenu.init(panel, nil)

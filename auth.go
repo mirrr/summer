@@ -24,8 +24,8 @@ func (a *auth) init(panel *Panel) {
 }
 
 func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
-	if !a.DisableAuth && !disableAuth {
-		middle := a.Login(g.BasePath())
+	if !a.DisableAuth {
+		middle := a.Login(g.BasePath(), disableAuth)
 		g.Use(middle)
 		if !a.added {
 			authGroup := a.RouterGroup.Group("/summer-auth")
@@ -35,8 +35,12 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 		}
 	} else {
 		g.Use(func(c *gin.Context) {
-			c.Set("user", getDummyUser("demo"))
-			c.Set("login", "demo")
+			user := getDummyUser("")
+			user.Rights = Rights{
+				Groups: []string{"root"},
+			}
+			c.Set("user", user)
+			c.Set("login", "")
 			c.Next()
 		})
 	}
@@ -62,11 +66,11 @@ func (a *auth) Logout(panelPath string) gin.HandlerFunc {
 	}
 }
 
-func (a *auth) Login(panelPath string) gin.HandlerFunc {
+func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		// 	регистрация первого пользователя админки
-		if a.Users.Length() == 0 && !a.DisableFirstStart {
+		if !disableAuth && a.Users.Length() == 0 && !a.DisableFirstStart {
 			defer c.Abort()
 			login, e1 := c.GetPostForm("admin-z-login")
 			password, e2 := c.GetPostForm("admin-z-password")
@@ -106,7 +110,7 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 		// авторизация пользователя админки
 		login, e1 := c.GetPostForm("admin-z-login")
 		password, e2 := c.GetPostForm("admin-z-password")
-		if e1 && e2 {
+		if !disableAuth && e1 && e2 {
 			if user, exists := a.Users.GetByLogin(login); exists && user.Password == H3hash(password+a.AuthSalt) {
 				setCookie(c, a.AuthPrefix+"login", login)
 				setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
@@ -130,6 +134,11 @@ func (a *auth) Login(panelPath string) gin.HandlerFunc {
 					c.Next()
 					return
 				}
+			} else if disableAuth {
+				c.Set("user", getDummyUser(""))
+				c.Set("login", "")
+				c.Next()
+				return
 			}
 		}
 		c.HTML(200, "login.html", gin.H{"panelPath": panelPath})

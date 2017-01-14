@@ -174,6 +174,9 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 	}
 
 	settings.Rights.Actions = uniqAppend(settings.Rights.Actions, []string{settings.Name})
+	if settings.DisableAuth {
+		settings.Rights.Groups = uniqAppend(settings.Rights.Groups, []string{"demo"})
+	}
 	panel.Groups.Add("root", settings.Name)
 
 	// middleware for rights check

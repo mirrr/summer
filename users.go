@@ -82,7 +82,15 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 	u.Lock()
 	defer u.Unlock()
 	user, exists = u.list[login]
-	if u.Panel.DisableAuth || !exists {
+	if u.Panel.DisableAuth {
+		us := getDummyUser(login)
+		us.Rights = Rights{
+			Groups: []string{"root", "demo"},
+		}
+		user = &us
+		return
+	}
+	if !exists {
 		us := getDummyUser(login)
 		user = &us
 	}
@@ -101,7 +109,7 @@ func getDummyUser(login string) UsersStruct {
 		Name:  login,
 		Login: login,
 		Rights: Rights{
-			Groups:  []string{"root"},
+			Groups:  []string{"demo"},
 			Actions: []string{},
 		},
 		Settings: obj{},
