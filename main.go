@@ -132,7 +132,6 @@ func (panel *Panel) init() {
 
 	// main rout group
 	panel.RouterGroup = panel.Engine.Group(panel.Path)
-	panel.auth.Auth(panel.RouterGroup)
 	panel.RouterGroup.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")

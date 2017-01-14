@@ -12,6 +12,7 @@ import (
 
 type (
 	auth struct {
+		added      bool
 		collection *mgo.Collection
 		*Panel
 	}
@@ -22,11 +23,16 @@ func (a *auth) init(panel *Panel) {
 	a.collection = mongo.DB(panel.DBName).C(a.Panel.UsersCollection)
 }
 
-func (a *auth) Auth(g *gin.RouterGroup) {
-	if !a.DisableAuth {
-		g.Use(a.Login(g.BasePath()))
-		g.POST("/z-auth", dummy) // хак для авторизации
-		g.POST("/z-register", dummy)
+func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
+	if !a.DisableAuth && !disableAuth {
+		middle := a.Login(g.BasePath())
+		g.Use(middle)
+		if !a.added {
+			authGroup := a.RouterGroup.Group("/summer-auth")
+			authGroup.Use(middle)
+			authGroup.POST("/login", dummy)
+			authGroup.POST("/register", dummy)
+		}
 	} else {
 		g.Use(func(c *gin.Context) {
 			c.Set("user", getDummyUser("demo"))
@@ -34,7 +40,10 @@ func (a *auth) Auth(g *gin.RouterGroup) {
 			c.Next()
 		})
 	}
-	g.GET("/logout", a.Logout(g.BasePath()))
+	if !a.added {
+		a.RouterGroup.GET("/logout", a.Logout(g.BasePath()))
+		a.added = true
+	}
 }
 
 func (a *auth) Logout(panelPath string) gin.HandlerFunc {

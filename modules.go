@@ -34,15 +34,16 @@ type (
 		PageRouteName    string // used to build page path: /{Path}/{module.PageRouteName}
 		AjaxRouteName    string // used to build ajax path: /{Path}/ajax/{module.PageRouteName}/*method
 		SocketsRouteName string // used to build websocket path: /{Path}/websocket/{module.PageRouteName}/*method
-		CollectionName   string
-		TemplateName     string
+		CollectionName   string // MongoDB collection name
+		TemplateName     string // template in views folder
 		ajax             ajaxFunc
 		websockets       websocketFunc
 		Icon             string // module icon in title
-		GroupTo          Simple // add like tab to another module
-		GroupTitle       string
-		Rights           Rights
-		OriginTemplate   bool // do not use Footer and Header wraps for module template
+		GroupTo          Simple // add module like tab to another module
+		GroupTitle       string // tab title
+		Rights           Rights // access rights required to access this page
+		DisableAuth      bool   // the page can be viewed for unauthorised visitors
+		OriginTemplate   bool   // do not use Footer and Header wraps in template render
 	}
 
 	// Simple module interface
@@ -184,6 +185,7 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 
 	// PAGE route
 	moduleGroup := panel.RouterGroup.Group(settings.PageRouteName)
+	panel.auth.Auth(moduleGroup, settings.DisableAuth)
 	moduleGroup.Use(func(c *gin.Context) {
 		preAllow(c)
 		c.Header("Module", settings.PageRouteName)
@@ -201,11 +203,13 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 
 	// AJAX routes
 	ajaxGroup := panel.RouterGroup.Group("/ajax/" + settings.AjaxRouteName)
+	panel.auth.Auth(ajaxGroup, settings.DisableAuth)
 	ajaxGroup.Use(preAllow)
 	ajaxGroup.POST("/*method", s.Ajax)
 
 	// SOCKET routes
 	socketGroup := panel.RouterGroup.Group("/websocket/" + settings.SocketsRouteName)
+	panel.auth.Auth(socketGroup, settings.DisableAuth)
 	socketGroup.Use(preAllow)
 	socketGroup.GET("/*method", s.Websockets)
 
