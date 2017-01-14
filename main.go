@@ -19,27 +19,25 @@ type (
 		Title             string
 		AuthSalt          string
 		AuthPrefix        string
-		Path              string // URL path of panel - "/" by default
-		Views             string // file path of ./templates directory
-		ViewsDoT          string // file path of doT.js templates directory
-		Files             string // file path of ./files directory
-		TMPs              string // file path of /tmp directory
-		DBName            string // MongoDB database name
 		DefaultPage       string
-		Language          string
-		UsersCollection   string // collection for panel's users
-		NotifyCollection  string // collection for panel's notifications
-		AICollection      string // collection for AUTO_INCREMENT
-		Debug             bool
-		Vars              map[string]interface{}
-		TFuncMap          template.FuncMap
-		FirstStart        func()
+		Path              string                 // URL path of panel - "/" by default
+		Views             string                 // file path of ./templates directory
+		ViewsDoT          string                 // file path of doT.js templates directory
+		Files             string                 // file path of ./files directory
+		DBName            string                 // MongoDB database name
+		UsersCollection   string                 // collection for panel's users
+		NotifyCollection  string                 // collection for panel's notifications
+		AICollection      string                 // collection for AUTO_INCREMENT
+		Debug             bool                   // show `gin` debugging messages
+		Vars              map[string]interface{} // variables, that can be used in templates {{var "variableName"}}
+		TFuncMap          template.FuncMap       // `gin` template functions
+		FirstStart        func()                 // function called after first user creation
+		DisableAuth       bool                   // if TRUE - without summer auth
+		DisableFirstStart bool                   // if TRUE - without first user creating (FirstStart function don't called)
+		JS                []string               // external JS resources
+		CSS               []string               // external CSS resources
 		RouterGroup       *gin.RouterGroup
 		Engine            *gin.Engine
-		DisableAuth       bool     // if TRUE - without summer auth
-		DisableFirstStart bool     // if TRUE - without first user creating
-		JS                []string // external JS resources
-		CSS               []string // external CSS resources
 	}
 
 	//Panel struct
@@ -83,8 +81,6 @@ func Create(s Settings) *Panel {
 			Views:           "templates/main",
 			ViewsDoT:        "templates/doT.js",
 			Files:           "files",
-			TMPs:            "/tmp",
-			Language:        "EN",
 			DBName:          "summerPanel",
 			DefaultPage:     "/settings",
 			UsersCollection: "admins",

@@ -12,10 +12,10 @@ import (
 )
 
 type (
-	// Func is alias for map[string]func(c *gin.Context)
-	Func map[string]func(c *gin.Context)
-	// WebFunc is alias for map[string]func(c *websocket.Conn)
-	WebFunc map[string]func(c *gin.Context, ws *websocket.Conn)
+	// ajaxFunc is alias for map[string]func(c *gin.Context)
+	ajaxFunc map[string]func(c *gin.Context)
+	// websocketFunc is alias for map[string]func(c *websocket.Conn)
+	websocketFunc map[string]func(c *gin.Context, ws *websocket.Conn)
 
 	//Module struct
 	Module struct {
@@ -26,22 +26,23 @@ type (
 
 	//ModuleSettings struct
 	ModuleSettings struct {
-		Name             string
-		Menu             *Menu
-		MenuTitle        string
+		Name             string // string identifier of module (must be unique)
+		Title            string // visible module name
+		Menu             *Menu  // parent menu (panel.MainMenu, panel.DropMenu etc.)
 		MenuOrder        int
-		PageRouteName    string
-		AjaxRouteName    string
-		SocketsRouteName string
-		Title            string
+		MenuTitle        string
+		PageRouteName    string // used to build page path: /{Path}/{module.PageRouteName}
+		AjaxRouteName    string // used to build ajax path: /{Path}/ajax/{module.PageRouteName}/*method
+		SocketsRouteName string // used to build websocket path: /{Path}/websocket/{module.PageRouteName}/*method
 		CollectionName   string
 		TemplateName     string
-		Ajax             Func
-		Websockets       WebFunc
-		Icon             string
-		GroupTo          Simple
+		ajax             ajaxFunc
+		websockets       websocketFunc
+		Icon             string // module icon in title
+		GroupTo          Simple // add like tab to another module
 		GroupTitle       string
 		Rights           Rights
+		OriginTemplate   bool // do not use Footer and Header wraps for module template
 	}
 
 	// Simple module interface
@@ -65,7 +66,7 @@ var (
 func (m *Module) Ajax(c *gin.Context) {
 	if c.MustGet("Allow").(bool) {
 		method := stripSlashes(strings.ToLower(c.Param("method")))
-		for ajaxRoute, ajaxFunc := range m.Settings.Ajax {
+		for ajaxRoute, ajaxFunc := range m.Settings.ajax {
 			if method == ajaxRoute {
 				ajaxFunc(c)
 				return
@@ -80,7 +81,7 @@ func (m *Module) Ajax(c *gin.Context) {
 // Websockets  is default module's websockets method
 func (m *Module) Websockets(c *gin.Context) {
 	method := stripSlashes(strings.ToLower(c.Param("method")))
-	for websocketsRoute, websocketsFunc := range m.Settings.Websockets {
+	for websocketsRoute, websocketsFunc := range m.Settings.websockets {
 		if method == websocketsRoute {
 			if conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil); err == nil {
 				websocketsFunc(c, conn)
@@ -118,11 +119,11 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		panic(`Repeated use of module name "` + settings.Name + `"`)
 	}
 
-	if settings.Ajax == nil {
-		settings.Ajax = Func{}
+	if settings.ajax == nil {
+		settings.ajax = ajaxFunc{}
 	}
-	if settings.Websockets == nil {
-		settings.Websockets = WebFunc{}
+	if settings.websockets == nil {
+		settings.websockets = websocketFunc{}
 	}
 	st := reflect.ValueOf(s)
 	for i := 0; i < st.NumMethod(); i++ {
@@ -135,10 +136,10 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 			}
 			if method == "func(*gin.Context)" {
 				method := st.Method(i).Interface().(func(*gin.Context))
-				settings.Ajax[name] = method
+				settings.ajax[name] = method
 			} else if method == "func(*gin.Context, *websocket.Conn)" {
 				method := st.Method(i).Interface().(func(*gin.Context, *websocket.Conn))
-				settings.Websockets[name] = method
+				settings.websockets[name] = method
 			}
 		}
 	}
@@ -166,6 +167,9 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 	}
 	if len(settings.TemplateName) == 0 {
 		settings.TemplateName = strings.Replace(settings.Name, "/", "-", -1)
+	}
+	if settings.OriginTemplate {
+		settings.TemplateName = "summer-origin-" + settings.TemplateName
 	}
 
 	settings.Rights.Actions = uniqAppend(settings.Rights.Actions, []string{settings.Name})

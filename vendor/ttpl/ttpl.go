@@ -188,6 +188,7 @@ func parseFiles(t *template.Template, dotPath string, path string, filenames ...
 			}
 		}
 
+		sOrigin := s
 		header := `{{template "header" .}}`
 		footer := `{{template "footer" .}}`
 		if strings.Contains(s, "SUMMER-NO-HEADER") {
@@ -210,6 +211,17 @@ func parseFiles(t *template.Template, dotPath string, path string, filenames ...
 			tmpl = t.New(name)
 		}
 		_, err = tmpl.Parse(s)
+		if err != nil {
+			return nil, err
+		}
+
+		name = "summer-origin-" + name
+		if name == t.Name() {
+			tmpl = t
+		} else {
+			tmpl = t.New(name)
+		}
+		_, err = tmpl.Parse(sOrigin)
 		if err != nil {
 			return nil, err
 		}
