@@ -134,7 +134,8 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 					c.Next()
 					return
 				}
-			} else if disableAuth {
+			}
+			if disableAuth {
 				c.Set("user", getDummyUser(""))
 				c.Set("login", "")
 				c.Next()
