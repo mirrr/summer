@@ -27,12 +27,6 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 	if !a.DisableAuth {
 		middle := a.Login(g.BasePath(), disableAuth)
 		g.Use(middle)
-		if !a.added {
-			authGroup := a.RouterGroup.Group("/summer-auth")
-			authGroup.Use(middle)
-			authGroup.POST("/login", dummy)
-			authGroup.POST("/register", dummy)
-		}
 	} else {
 		g.Use(func(c *gin.Context) {
 			user := getDummyUser("")
@@ -44,8 +38,13 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 			c.Next()
 		})
 	}
-	if !a.added {
+	if !a.DisableAuth && !a.added {
 		a.RouterGroup.GET("/logout", a.Logout(g.BasePath()))
+		middle := a.Login(g.BasePath(), false)
+		authGroup := a.RouterGroup.Group("/summer-auth")
+		authGroup.Use(middle)
+		authGroup.POST("/login", dummy)
+		authGroup.POST("/register", dummy)
 		a.added = true
 	}
 }
