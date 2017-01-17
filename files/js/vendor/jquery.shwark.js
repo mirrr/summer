@@ -106,17 +106,14 @@ function shwOpen(template, options, $this, content) {
 		var dropStart = {};
 
 		if (!options.toDown || $button !== $target) {
-			console.log("1");
 			dropDirection.top = (d / 2 - dropSize.height / 2) + 'px';
 			dropStart.top = -(dropSize.height / 2) + 'px';
 			newOfst.top += targetSize.height / 2;
 			ofst.top += buttonSize.height / 2;
 		} else if (options.toDown) {
-			console.log("2");
 			dropDirection.top = (d / 2) + 'px';
 			dropStart.top = '0px';
 		} else {
-			console.log("3");
 			dropDirection.top = (d / 2 - dropSize.height) + 'px';
 			dropStart.top = -dropSize.height + 'px';
 			newOfst.top += targetSize.height;
@@ -124,17 +121,14 @@ function shwOpen(template, options, $this, content) {
 		}
 
 		if (!options.toRight && !options.toLeft || $button !== $target) {
-			console.log("4");
 			dropDirection.left = (d / 2 - dropSize.width / 2) + 'px';
 			dropStart.left = -(dropSize.width / 2) + 'px';
 			newOfst.left += targetSize.width / 2;
 			ofst.left += buttonSize.width / 2;
 		} else if (options.toRight) {
-			console.log("5");
 			dropDirection.left = (d / 2) + 'px';
 			dropStart.left = '0px';
 		} else {
-			console.log("6");
 			dropDirection.left = (d / 2 - dropSize.width) + 'px';
 			dropStart.left = -dropSize.width + 'px';
 			newOfst.left += targetSize.width;
