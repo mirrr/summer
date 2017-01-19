@@ -104,7 +104,9 @@
 	 * 		timeout: 15000,                     // 15 sec.
 	 * 		check:   function () {....},        // колбек проверки (return true/false - успешность проверки)
 	 * 		success: function (result) {....},  // колбек на успешное выполнение (return true - закрыть окно)
-	 * 		error:   function (result) {....}   // колбек на ошибку в ответе сервера
+	 * 		error:   function (result) {....}   // колбек на ошибку в ответе сервера,
+	 * 		confirm: function (element, event, callback) {callback();} // функция подтверждения
+	 * 		                                                           // (вместо стандартной, при подтверждении вызвать callback)
 	 * });
 	 */
 	$.fn.ajaxActionSender = function (options) {
@@ -206,7 +208,7 @@
 			if (settings.url && settings.check(data, $this, settings)) {
 				settings.ok();
 			}
-		});
+		}, null, options.confirm);
 	};
 
 
@@ -215,7 +217,7 @@
 	 *
 	 * @param  {Function} func
 	 */
-	$.fn.forceClick = function (func, target) {
+	$.fn.forceClick = function (func, target, confirm) {
 		if (typeof func !== 'function') {
 			throw new Error('Not specified handler function');
 		}
@@ -224,18 +226,26 @@
 		} else {
 			target = $(target);
 		}
+		if (typeof confirm !== 'function') {
+			confirm = function (element, event, callback) {
+				if ($(element).hasClass('need-confirm')) {
+					$.tools.confirm('Are you sure?', 'Are you sure that you want to perform this action?', function () {
+						setTimeout(callback, 0);
+					});
+				} else {
+					setTimeout(callback, 0);
+				}
+			}
+		}
 
 		target.off('click', this.selector);
 		target.on('click', this.selector, function (event) {
+			var that = this;
 			event = event || window.event;
 			event.preventDefault();
-			if ($(this).hasClass('need-confirm')) {
-				$.tools.confirm('Are you sure?', 'Are you sure that you want to perform this action?', function () {
-					func.call(this, event);
-				}, $(this));
-			} else {
-				func.call(this, event);
-			}
+			confirm(that, event, function () {
+				func.call(that, event);
+			});
 			return false;
 		});
 		return this;

@@ -121,6 +121,7 @@ function shwOpen(template, options, $this, content) {
 		}
 
 		if (!options.toRight && !options.toLeft || $button !== $target) {
+			$wrapper.addClass('centered');
 			dropDirection.left = (d / 2 - dropSize.width / 2) + 'px';
 			dropStart.left = -(dropSize.width / 2) + 'px';
 			newOfst.left += targetSize.width / 2;
