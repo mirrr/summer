@@ -231,7 +231,7 @@
 				if ($(element).hasClass('need-confirm')) {
 					$.tools.confirm('Are you sure?', 'Are you sure that you want to perform this action?', function () {
 						setTimeout(callback, 0);
-					});
+					}, $(element));
 				} else {
 					setTimeout(callback, 0);
 				}
