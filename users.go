@@ -111,6 +111,9 @@ func (u *Users) Add(user UsersStruct) error {
 		u.Unlock()
 		return nil
 	} else {
+		if mgo.IsDup(err) {
+			return errors.New("User already exists!")
+		}
 		return errors.New("DB Error")
 	}
 }
