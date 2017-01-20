@@ -24,7 +24,7 @@ type (
 		// Information field, if needs auth by email set Login == Email
 		Email string `form:"email" json:"email" bson:"email" valid:"email"`
 
-		// sha512 hash of password (byt from form can be received string password value)
+		// sha512 hash of password (but from form can be received string password value)
 		Password string `form:"password" json:"-" bson:"password" valid:"required,min(5)"`
 
 		// from form can be received string password value)
