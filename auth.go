@@ -75,7 +75,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 
 		// 	First Start
 		if a.fsCount == -1 { // have not looked in the session
-			a.fsCount, _ = a.fsCollection.Count()
+			a.fsCount, _ = a.fsCollection.Find(obj{"uc": a.UsersCollection}).Count()
 		}
 		if a.fsCount <= 0 {
 			if !disableAuth && !a.DisableFirstStart {
@@ -98,7 +98,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 						return
 					}
 
-					a.fsCollection.Insert(obj{"_id": 1, "commit": true})
+					a.fsCollection.Insert(obj{"uc": a.UsersCollection, "commit": true})
 					a.fsCount = 1
 					go a.FirstStart()
 					c.String(200, "Ok")
@@ -109,7 +109,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				c.Abort()
 				return
 			} else {
-				a.fsCollection.Insert(obj{"_id": 1, "commit": true})
+				a.fsCollection.Insert(obj{"uc": a.UsersCollection, "commit": true})
 				a.fsCount = 1
 				go a.FirstStart()
 			}
