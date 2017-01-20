@@ -45,7 +45,7 @@ type (
 		// User access rights (summer.Rights)
 		Rights Rights `form:"-" json:"rights" bson:"rights"`
 
-		// IP control fields
+		// IP control fields (coming soon)
 		LastIP   uint32 `form:"-" json:"lastIP" bson:"lastIP"`
 		IP       uint32 `form:"-" json:"-" bson:"ip"`
 		StringIP string `form:"-" json:"ip" bson:"-"`
@@ -61,6 +61,7 @@ type (
 		listID     map[uint64]*UsersStruct // key - id
 		collection *mgo.Collection
 		sync.Mutex
+		afterAddFn func(*UsersStruct)
 		*Panel
 	}
 )
@@ -71,6 +72,7 @@ func (u *Users) init(panel *Panel) {
 	u.collection = mongo.DB(panel.DBName).C(panel.UsersCollection)
 	u.list = map[string]*UsersStruct{}
 	u.listID = map[uint64]*UsersStruct{}
+	u.afterAddFn = func(*UsersStruct) {}
 
 	go func() {
 		for range time.Tick(time.Second * 10) {
@@ -78,6 +80,13 @@ func (u *Users) init(panel *Panel) {
 			u.clearUsers()
 		}
 	}()
+}
+
+// SetAddingFn set callback function that will be called after successful user adding
+func (u *Users) SetAddingFn(fn func(*UsersStruct)) {
+	u.Lock()
+	u.afterAddFn = fn
+	u.Unlock()
 }
 
 // Add new user from struct
@@ -108,6 +117,7 @@ func (u *Users) Add(user UsersStruct) error {
 		u.Lock()
 		u.list[user.Login] = &user
 		u.listID[user.ID] = &user
+		u.afterAddFn(&user)
 		u.Unlock()
 		return nil
 	} else {
@@ -159,7 +169,7 @@ func (u *Users) clearUsers() {
 	}
 }
 
-// GetArr exports array of users
+// GetByLogin returns user struct by login
 func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 	u.Lock()
 	if user, exists = u.list[login]; !exists {
@@ -189,7 +199,7 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 	return
 }
 
-// GetArr exports array of users
+// Get returns user struct by id
 func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 	u.Lock()
 	if user, exists = u.listID[id]; !exists {
@@ -219,7 +229,7 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 	return
 }
 
-// Length of array of users
+// Length of users array
 func (u *Users) Length() int {
 	u.Lock()
 	defer u.Unlock()
