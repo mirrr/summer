@@ -86,10 +86,12 @@ $(function () {
 		$('#content').innerHeight(Math.max(contentSpace, contentSize));
 	}
 
-	$(window).scroll(updatePage);
-	$(window).resize(updatePage);
-	setInterval(updatePage, 300);
-	updatePage();
+	if ($('#content').length) {
+		$(window).scroll(updatePage);
+		$(window).resize(updatePage);
+		setInterval(updatePage, 300);
+		updatePage();
+	}
 
 	$('.timepicker').each(function (index, el) {
 		$(el).datetimepicker(timepk);
@@ -152,5 +154,4 @@ $(function () {
 	}).blur(function () {
 		$(this).parent(".li-search").removeClass('focus')
 	});
-
 });
