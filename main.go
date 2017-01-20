@@ -84,6 +84,7 @@ func Create(s Settings) *Panel {
 			DBName:          "summerPanel",
 			DefaultPage:     "/settings",
 			UsersCollection: "admins",
+			AICollection:    "ai",
 			Vars:            map[string]interface{}{},
 			FirstStart:      func() {},
 			Engine:          engine,
@@ -150,7 +151,7 @@ func (panel *Panel) init() {
 	panel.initTpl()
 
 	// init autoincrement module
-	ai.Connect(mongo.DB(panel.DBName).C("ai"))
+	ai.Connect(mongo.DB(panel.DBName).C(panel.AICollection))
 
 	// static files
 	panel.Engine.Use(gzipper)

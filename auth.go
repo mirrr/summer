@@ -12,15 +12,19 @@ import (
 
 type (
 	auth struct {
-		added      bool
-		collection *mgo.Collection
+		added        bool
+		collection   *mgo.Collection
+		fsCollection *mgo.Collection
+		fsCount      int
 		*Panel
 	}
 )
 
 func (a *auth) init(panel *Panel) {
 	a.Panel = panel
+	a.fsCount = -1 // count of records in the collection "firstStart" (if -1, have not looked in the session)
 	a.collection = mongo.DB(panel.DBName).C(a.Panel.UsersCollection)
+	a.fsCollection = mongo.DB(panel.DBName).C("firstStart")
 }
 
 func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
@@ -29,7 +33,7 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 		g.Use(middle)
 	} else {
 		g.Use(func(c *gin.Context) {
-			user := getDummyUser("")
+			user := getDummyUser()
 			user.Rights = Rights{
 				Groups: []string{"root"},
 			}
@@ -68,42 +72,53 @@ func (a *auth) Logout(panelPath string) gin.HandlerFunc {
 func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		// 	регистрация первого пользователя админки
-		if !disableAuth && a.Users.Length() == 0 && !a.DisableFirstStart {
-			defer c.Abort()
-			login, e1 := c.GetPostForm("admin-z-login")
-			password, e2 := c.GetPostForm("admin-z-password")
-			password2, e3 := c.GetPostForm("admin-z-password-2")
+		// 	First Start
+		if a.fsCount == -1 { // have not looked in the session
+			a.fsCount, _ = a.fsCollection.Count()
+		}
+		if a.fsCount <= 0 {
+			if !disableAuth && !a.DisableFirstStart {
+				defer c.Abort()
+				login, e1 := c.GetPostForm("admin-z-login")
+				password, e2 := c.GetPostForm("admin-z-password")
+				password2, e3 := c.GetPostForm("admin-z-password-2")
 
-			if e1 && e2 && e3 {
-				if password == password2 {
-					if len(login) > 2 && len(password) > 5 {
-						if err := a.Users.Add(UsersStruct{
-							Login:    login,
-							Password: password,
-							Name:     strings.Title(login),
-							Root:     true,
-							Rights:   Rights{Groups: []string{"root"}, Actions: []string{"all"}},
-							Settings: obj{},
-						}); err != nil {
-							c.String(400, "DB Error")
-							return
+				if e1 && e2 && e3 {
+					if password == password2 {
+						if len(login) > 2 && len(password) > 5 {
+							if err := a.Users.Add(UsersStruct{
+								Login:    login,
+								Password: password,
+								Name:     strings.Title(login),
+								Root:     true,
+								Rights:   Rights{Groups: []string{"root"}, Actions: []string{"all"}},
+								Settings: obj{},
+							}); err != nil {
+								c.String(400, "DB Error")
+								return
+							}
+
+							a.fsCollection.Insert(obj{"_id": 1, "commit": true})
+							a.fsCount = 1
+							a.FirstStart()
+							c.String(200, "Ok")
+						} else {
+							c.String(400, "Login or password is too short!")
 						}
-
-						a.FirstStart()
-						c.String(200, "Ok")
 					} else {
-						c.String(400, "Login or password is too short!")
+						c.String(400, "Password mismatch!")
 					}
-				} else {
-					c.String(400, "Passwords do not match!")
+					return
 				}
-				return
-			}
 
-			c.HTML(200, "firstStart.html", gin.H{"panelPath": panelPath})
-			c.Abort()
-			return
+				c.HTML(200, "firstStart.html", gin.H{"panelPath": panelPath})
+				c.Abort()
+				return
+			} else {
+				a.fsCollection.Insert(obj{"_id": 1, "commit": true})
+				a.fsCount = 1
+				a.FirstStart()
+			}
 		}
 
 		// авторизация пользователя админки
@@ -135,7 +150,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				}
 			}
 			if disableAuth {
-				c.Set("user", getDummyUser(""))
+				c.Set("user", getDummyUser())
 				c.Set("login", "")
 				c.Next()
 				return
