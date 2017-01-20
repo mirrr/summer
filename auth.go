@@ -43,7 +43,7 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 		})
 	}
 	if !a.DisableAuth && !a.added {
-		a.RouterGroup.GET("/logout", a.Logout(a.Path))
+		a.RouterGroup.GET("/logout", a.Logout(a.RouterGroup.BasePath()))
 		middle := a.Login(g.BasePath(), false)
 		authGroup := a.RouterGroup.Group("/summer-auth")
 		authGroup.Use(middle)
@@ -147,7 +147,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 						c.Next()
 						return
 					} else {
-						a.Logout(a.Path)(c)
+						a.Logout(a.RouterGroup.BasePath())(c)
 						return
 					}
 				}
