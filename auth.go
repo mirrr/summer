@@ -37,13 +37,13 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 			user.Rights = Rights{
 				Groups: []string{"root"},
 			}
-			c.Set("user", user)
+			c.Set("user", *user)
 			c.Set("login", "")
 			c.Next()
 		})
 	}
 	if !a.DisableAuth && !a.added {
-		a.RouterGroup.GET("/logout", a.Logout(g.BasePath()))
+		a.RouterGroup.GET("/logout", a.Logout(a.Path))
 		middle := a.Login(g.BasePath(), false)
 		authGroup := a.RouterGroup.Group("/summer-auth")
 		authGroup.Use(middle)
@@ -66,6 +66,7 @@ func (a *auth) Logout(panelPath string) gin.HandlerFunc {
 		c.Header("Cache-Control", "no-cache")
 		c.Header("Content-Type", "text/html; charset=utf-8")
 		c.String(200, "<meta http-equiv='refresh' content='0; url="+panelPath+"' />")
+		c.Abort()
 	}
 }
 
@@ -84,30 +85,23 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				password2, e3 := c.GetPostForm("admin-z-password-2")
 
 				if e1 && e2 && e3 {
-					if password == password2 {
-						if len(login) > 2 && len(password) > 5 {
-							if err := a.Users.Add(UsersStruct{
-								Login:    login,
-								Password: password,
-								Name:     strings.Title(login),
-								Root:     true,
-								Rights:   Rights{Groups: []string{"root"}, Actions: []string{"all"}},
-								Settings: obj{},
-							}); err != nil {
-								c.String(400, "DB Error")
-								return
-							}
-
-							a.fsCollection.Insert(obj{"_id": 1, "commit": true})
-							a.fsCount = 1
-							a.FirstStart()
-							c.String(200, "Ok")
-						} else {
-							c.String(400, "Login or password is too short!")
-						}
-					} else {
-						c.String(400, "Password mismatch!")
+					if err := a.Users.Add(UsersStruct{
+						Login:     login,
+						Password:  password,
+						Password2: password2,
+						Name:      strings.Title(login),
+						Root:      true,
+						Rights:    Rights{Groups: []string{"root"}, Actions: []string{"all"}},
+						Settings:  obj{},
+					}); err != nil {
+						c.String(400, err.Error())
+						return
 					}
+
+					a.fsCollection.Insert(obj{"_id": 1, "commit": true})
+					a.fsCount = 1
+					go a.FirstStart()
+					c.String(200, "Ok")
 					return
 				}
 
@@ -117,7 +111,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			} else {
 				a.fsCollection.Insert(obj{"_id": 1, "commit": true})
 				a.fsCount = 1
-				a.FirstStart()
+				go a.FirstStart()
 			}
 		}
 
@@ -126,9 +120,13 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 		password, e2 := c.GetPostForm("admin-z-password")
 		if !disableAuth && e1 && e2 {
 			if user, exists := a.Users.GetByLogin(login); exists && user.Password == H3hash(password+a.AuthSalt) {
-				setCookie(c, a.AuthPrefix+"login", login)
-				setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
-				c.String(200, "Ok")
+				if !user.Disabled && !user.Deleted {
+					setCookie(c, a.AuthPrefix+"login", login)
+					setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
+					c.String(200, "Ok")
+				} else {
+					c.String(400, "Account disabled or waits for moderation.")
+				}
 			} else {
 				c.String(400, "Wrong password!")
 			}
@@ -139,18 +137,24 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
 			if e1 == nil && e2 == nil {
 				if user, exists := a.Users.GetByLogin(login); exists && hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
-					if user.Root {
-						user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
-					}
+					if !user.Disabled && !user.Deleted {
+						if user.Root {
+							user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
+						}
 
-					c.Set("user", *user)
-					c.Set("login", user.Login)
-					c.Next()
-					return
+						c.Set("user", *user)
+						c.Set("login", user.Login)
+						c.Next()
+						return
+					} else {
+						a.Logout(a.Path)(c)
+						return
+					}
 				}
 			}
 			if disableAuth {
-				c.Set("user", getDummyUser())
+				user := getDummyUser()
+				c.Set("user", *user)
 				c.Set("login", "")
 				c.Next()
 				return

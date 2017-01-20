@@ -6,6 +6,7 @@ import (
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
 	"gopkg.in/mgo.v2"
+	"strings"
 	"sync"
 	"time"
 )
@@ -13,7 +14,7 @@ import (
 type (
 	UsersStruct struct {
 		ID     uint64 `form:"id" json:"id" bson:"_id"`
-		Login  string `form:"login" json:"login" bson:"login" valid:"required,min=3"`
+		Login  string `form:"login" json:"login" bson:"login" valid:"required,min(3)"`
 		Name   string `form:"name" json:"name" bson:"name"`
 		Notice string `form:"notice" json:"notice" bson:"notice"`
 
@@ -21,16 +22,16 @@ type (
 		Root bool `form:"-" json:"root" bson:"root"`
 
 		// Information field, if needs auth by email set Login == Email
-		Email string `form:"email" json:"email" bson:"email" valid:"required,email"`
+		Email string `form:"email" json:"email" bson:"email" valid:"email"`
 
 		// sha512 hash of password (byt from form can be received string password value)
-		Password string `form:"password" json:"-" bson:"password" valid:"required,min=5"`
+		Password string `form:"password" json:"-" bson:"password" valid:"required,min(5)"`
 
 		// from form can be received string password value)
 		Password2 string `form:"password2" json:"-" bson:"-"`
 
 		// Default user language (Information field)
-		Lang string `form:"lang" json:"lang" bson:"lang" valid:"max=3"`
+		Lang string `form:"lang" json:"lang" bson:"lang" valid:"max(3)"`
 
 		// Times of creating or editing (or loading from mongoDB)
 		Created int64 `form:"-" json:"-" bson:"created"`
@@ -38,10 +39,10 @@ type (
 		Loaded  int64 `form:"-" json:"-" bson:"-"`
 
 		// Fields for users auth limitation
-		Enabled bool `form:"-" json:"-" bson:"enabled"`
-		Deleted bool `form:"-" json:"-" bson:"deleted"`
+		Disabled bool `form:"-" json:"-" bson:"disabled"`
+		Deleted  bool `form:"-" json:"-" bson:"deleted"`
 
-		//
+		// User access rights (summer.Rights)
 		Rights Rights `form:"-" json:"rights" bson:"rights"`
 
 		// IP control fields
@@ -82,7 +83,11 @@ func (u *Users) init(panel *Panel) {
 // Add new user from struct
 func (u *Users) Add(user UsersStruct) error {
 	if _, err := govalidator.ValidateStruct(user); err != nil {
-		return err
+		ers := []string{}
+		for k, v := range govalidator.ErrorsByField(err) {
+			ers = append(ers, k+": "+v)
+		}
+		return errors.New(strings.Join(ers, "<hr />"))
 	}
 	if user.Password != user.Password2 {
 		return errors.New("Password mismatch!")
@@ -106,7 +111,7 @@ func (u *Users) Add(user UsersStruct) error {
 		u.Unlock()
 		return nil
 	} else {
-		return err
+		return errors.New("DB Error")
 	}
 }
 
