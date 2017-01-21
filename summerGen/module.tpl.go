@@ -47,6 +47,7 @@ var (
 			Title:          "{{.Title}}",{{if .Menu}}
 			MenuOrder:      0,
 			MenuTitle:      "{{.Title}}",
+			Rights:         summer.Rights{Groups: []string{"all"}},
 			{{if .SubDir}}TemplateName:   "{{.name}}/{{.SubDir}}",{{end}}
 			Menu:           panel.{{.Menu}},{{end}}{{if .GroupTo}}
 			GroupTo:        {{if .Vendor}}groupTo[0]{{else}}{{.GroupTo}}{{end}},
