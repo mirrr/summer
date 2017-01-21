@@ -19,7 +19,7 @@ type (
 		Notice string `form:"notice" json:"notice" bson:"notice"`
 
 		// Is Root-user? Similar as Rights.Groups = ["root"]
-		Root bool `form:"-" json:"root" bson:"root"`
+		Root bool `form:"-" json:"-" bson:"root"`
 
 		// Information field, if needs auth by email set Login == Email
 		Email string `form:"email" json:"email" bson:"email" valid:"email"`
@@ -34,13 +34,13 @@ type (
 		Lang string `form:"lang" json:"lang" bson:"lang" valid:"max(3)"`
 
 		// Times of creating or editing (or loading from mongoDB)
-		Created int64 `form:"-" json:"-" bson:"created"`
-		Updated int64 `form:"-" json:"-" bson:"updated"`
+		Created int64 `form:"-" json:"created" bson:"created"`
+		Updated int64 `form:"-" json:"updated" bson:"updated"`
 		Loaded  int64 `form:"-" json:"-" bson:"-"`
 
 		// Fields for users auth limitation
-		Disabled bool `form:"-" json:"-" bson:"disabled"`
-		Deleted  bool `form:"-" json:"-" bson:"deleted"`
+		Disabled bool `form:"-" json:"disabled" bson:"disabled"`
+		Deleted  bool `form:"-" json:"deleted" bson:"deleted"`
 
 		// User access rights (summer.Rights)
 		Rights Rights `form:"-" json:"rights" bson:"rights"`
