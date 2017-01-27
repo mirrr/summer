@@ -110,22 +110,23 @@ func dot(dotPath string) func(name string) string {
 	return func(name string) string {
 		dmu.Lock()
 		defer dmu.Unlock()
-		if _, exists := dots[name]; !exists {
-			dots[name] = "<!-- Template '" + name + "' not found! -->\n"
-			if dat, err := ioutil.ReadFile(dotPath + "/" + name); err == nil {
+		fullname := dotPath + "/" + name
+		if _, exists := dots[fullname]; !exists {
+			dots[fullname] = "<!-- Template '" + name + "' not found! -->\n"
+			if dat, err := ioutil.ReadFile(fullname); err == nil {
 				s := strings.Split(name, ".")
 				tplName := spliter.Split(s[0], -1)
 				if s[len(s)-1] == "js" { // js темплейты
-					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
+					dots[fullname] = "<!-- doT.js template - " + name + " -->\n" +
 						"<script type='text/javascript' id='tpl_" + strings.Join(tplName[1:], "-") + "'>\n" + string(dat) + "</script>\n"
 
 				} else { // html темплейты
-					dots[name] = "<!-- doT.js template - " + name + " -->\n" +
+					dots[fullname] = "<!-- doT.js template - " + name + " -->\n" +
 						"<script type='text/html' id='tpl_" + strings.Join(tplName[1:], "-") + "'>\n" + string(dat) + "</script>\n"
 				}
 			}
 		}
-		return dots[name]
+		return dots[fullname]
 	}
 }
 

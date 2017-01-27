@@ -18,6 +18,7 @@ compile=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/redactor.js" \
 "${vendor}/jquery.shwark.js" \
 "${vendor}/jquery.cookie.js" \
+"${vendor}/groupper.js" \
 "${vendor}/jquery.wbox.js" \
 "${vendor}/jquery.ajaxHelper.js" \
 "${vendor}/bootstrap.min.js" \

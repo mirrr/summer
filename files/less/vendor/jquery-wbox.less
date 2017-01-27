@@ -32,9 +32,11 @@
 	display: inline-block;
 	vertical-align: middle;
 	overflow: hidden;
+	-webkit-transition: height 0.4s, top 0.4s;
+	transition: height 0.4s, top 0.4s;
 }
 
-@media (max-width:1024px) {
+@media (max-width:750px) {
 	.w-box {
 		width: 95% !important;
 		min-width: 95% !important;
@@ -42,10 +44,10 @@
 	}
 }
 
-@media (max-width:780px) {
+@media (max-width:650px) {
 	.w-box {
-		label {
-			width: 90%;
+		input[type=text], input[type=password], input[type=email], input[type=time], select, textarea, label {
+			width: 99%;
 		}
 	}
 }
@@ -61,6 +63,8 @@
 	.h1, .h2, .h3, h1, h2, h3 {
 		font-weight: bold;
 	}
+	-webkit-transition: height 0.4s, top 0.4s;
+	transition: height 0.4s, top 0.4s;
 }
 
 .w-content-body {

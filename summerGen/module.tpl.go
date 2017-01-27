@@ -265,7 +265,7 @@ $(function () {
 	});
 
 	// "Edit" button pressed
-	$('.edit').ajaxActionSender({
+	$.tools.ajaxActionSender('.edit', {
 		url: ajaxUrl + 'get',
 		method: 'POST',
 		success: function (result) {
@@ -285,7 +285,7 @@ $(function () {
 	});
 
 	// "Remove{{if .AddTabs}}/Restore{{end}}" button pressed
-	$('.remove{{if .AddTabs}}, .restore{{end}}').ajaxActionSender({
+	$.tools.ajaxActionSender('.remove{{if .AddTabs}}, .restore{{end}}', {
 		url: ajaxUrl + '{{if .AddTabs}}action{{else}}delete{{end}}',
 		method: 'POST',
 		remove: true // remove from list if success
@@ -305,11 +305,11 @@ $(function () {
 			$('#page-before').removeAttr('disabled');
 		}
 	}
-	$('#page-next').forceClick(function () {
+	$.tools.forceClick('#page-next', function () {
 		filter.page++;
 		update(filter);
 	});
-	$('#page-before').forceClick(function () {
+	$.tools.forceClick('#page-before', function () {
 		filter.page--;
 		update(filter);
 	});

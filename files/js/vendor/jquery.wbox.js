@@ -97,7 +97,7 @@
 			}
 		};
 
-		// Открыть окно с содержимым
+		// open window
 		this.open = function (title, text, width) {
 			that.title.text(title);
 			that.contentDiv.html(text);
@@ -138,7 +138,7 @@
 		};
 
 
-		// Заменить содержимое
+		// change content
 		this.set = function (title, text, width) {
 			if (width) {
 				that.win.css({
@@ -149,9 +149,11 @@
 
 			that.title.text(title);
 			that.contentDiv.html(text);
+			that.content.scrollTop(0);
+			that.updatePosition();
 		};
 
-		// Cкрыть окно
+		// close window
 		this.close = function () {
 			if (typeof settings.beforeClose === 'function') {
 				settings.beforeClose();
@@ -185,3 +187,8 @@
 
 	$.wbox = new Wbox('#page-top');
 }));
+$(function () {
+	window.wboxwait = window.wboxWait = function () {
+		$.wbox.open('Loading...', '<div class="preloader" data-name="preloader"><div class="preloader-wrapper active"><div class="spinner" ><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div></div>');
+	};
+});

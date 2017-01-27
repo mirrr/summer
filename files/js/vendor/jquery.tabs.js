@@ -1,6 +1,6 @@
 $(function () {
 	// Вкладки и табы
-	$('div.tabs>*[data-id]').forceClick(function (event) {
+	$.tools.forceClick('div.tabs>*[data-id]', function (event) {
 		if ($(this).not('[disabled]').not('.disabled').length > 0) {
 			var $tabs = $(this).parent();
 

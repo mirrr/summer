@@ -218,7 +218,5 @@ func (panel *Panel) correctPath() {
 }
 
 func Wait() {
-	for {
-		time.Sleep(time.Hour)
-	}
+	select {}
 }
