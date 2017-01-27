@@ -97,7 +97,7 @@
 	 */
 	$.fn.ajaxActionSender = function (options) {
 		$.tools.ajaxActionSender(this.selector, options)
-		console.error("Function $(selector).ajaxActionSender(options) is deprecated and will be removed in the next release! Pleas use $.tools.ajaxActionSender(selector, options)");
+		console.error("Function $(selector).ajaxActionSender(options) is deprecated and will be removed in the next release! Please use $.tools.ajaxActionSender(selector, options)");
 	};
 
 
@@ -107,7 +107,7 @@
 	 */
 	$.fn.forceClick = function (func, target, confirm) {
 		$.tools.forceClick(this.selector, func, target, confirm)
-		console.error("Function $(selector).forceClick(func) is deprecated and will be removed in the next release! Pleas use $.tools.forceClick(selector, func)");
+		console.error("Function $(selector).forceClick(func) is deprecated and will be removed in the next release! Please use $.tools.forceClick(selector, func)");
 	};
 
 
