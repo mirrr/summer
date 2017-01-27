@@ -4583,7 +4583,7 @@
 				'./dropdown/selectOnClose',
 				'./dropdown/closeOnSelect',
 
-				'./i18n/ru'
+				'./i18n/en'
 			], function ($, require,
 
 				ResultsList,
