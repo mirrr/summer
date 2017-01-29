@@ -2,6 +2,7 @@ package summer
 
 import (
 	"errors"
+	"github.com/kennygrant/sanitize"
 	"github.com/night-codes/govalidator"
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
@@ -15,8 +16,8 @@ type (
 	UsersStruct struct {
 		ID     uint64 `form:"id" json:"id" bson:"_id"`
 		Login  string `form:"login" json:"login" bson:"login" valid:"required,min(3)"`
-		Name   string `form:"name" json:"name" bson:"name"`
-		Notice string `form:"notice" json:"notice" bson:"notice"`
+		Name   string `form:"name" json:"name" bson:"name" valid:"max(200)"`
+		Notice string `form:"notice" json:"notice" bson:"notice" valid:"max(1000)"`
 
 		// Is Root-user? Similar as Rights.Groups = ["root"]
 		Root bool `form:"-" json:"-" bson:"root"`
@@ -102,6 +103,9 @@ func (u *Users) Add(user UsersStruct) error {
 		return errors.New("Password mismatch!")
 	}
 	user.ID = ai.Next(u.Panel.UsersCollection)
+	user.Name = sanitize.HTML(user.Name)
+	user.Login = sanitize.HTML(user.Login)
+	user.Notice = sanitize.HTML(user.Notice)
 	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
 	user.Created = time.Now().Unix()
 	user.Updated = user.Created
