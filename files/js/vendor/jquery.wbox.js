@@ -126,6 +126,9 @@
 					suppressScrollX: true,
 					includePadding: false
 				});
+				$('body').on("touchmove", function (e) {
+					e.preventDefault();
+				});
 			}
 
 			$(settings.blures).addClass('w-blured');
@@ -171,6 +174,7 @@
 				if (typeof that.content.perfectScrollbar === 'function') {
 					that.content.perfectScrollbar('destroy');
 				}
+				$('body').off("touchmove");
 			}, 400);
 		};
 
