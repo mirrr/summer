@@ -25,11 +25,11 @@
 				$.message.init();
 			}
 
-			if (msg) {
+			if (typeof msg === 'string') {
 				var $wrap = $('<div/>', {
 					'class': msgClass + ' unselectable'
 				});
-				$wrap.append(msg);
+				$wrap.append(msg.replace("\n\n", '<hr />').replace("\n", '<br />'));
 				$stek.prepend($wrap);
 
 				$wrap.on('click', function (event) {

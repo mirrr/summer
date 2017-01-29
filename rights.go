@@ -6,8 +6,8 @@ import (
 
 type (
 	Rights struct {
-		Groups  []string
-		Actions []string
+		Groups  []string `form:"groups" json:"groups" bson:"groups"`
+		Actions []string `form:"actions" json:"actions" bson:"actions"`
 	}
 
 	GroupsList struct {

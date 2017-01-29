@@ -142,7 +142,8 @@
 			error: (function (result) {
 				$.message.ajaxWarn(result);
 			}),
-			after: (function () {})
+			after: (function () {}),
+			before: (function () {}),
 		}, options);
 
 		if (!options.url && options.target) {
@@ -157,6 +158,7 @@
 			timeout: options.timeout,
 			success: function (result) {
 				$.progress.stop();
+				options.before(result);
 				empty = false;
 				if (Array.isArray(result.data) && result.data.length) {
 					$this.tpl(options.itemTpl, result.data);
@@ -185,6 +187,7 @@
 			},
 			error: function (result) {
 				$.progress.stop();
+				options.before(result);
 				if (options.noitemsTpl) {
 					$this.tpl(options.noitemsTpl);
 				}

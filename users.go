@@ -26,7 +26,7 @@ type (
 		Email string `form:"email" json:"email" bson:"email" valid:"email"`
 
 		// sha512 hash of password (but from form can be received string password value)
-		Password string `form:"password" json:"-" bson:"password" valid:"required,min(5)"`
+		Password string `form:"password" json:"-" bson:"password" valid:"min(5)"`
 
 		// from form can be received string password value)
 		Password2 string `form:"password2" json:"-" bson:"-"`
@@ -44,7 +44,7 @@ type (
 		Deleted  bool `form:"-" json:"deleted" bson:"deleted"`
 
 		// User access rights (summer.Rights)
-		Rights Rights `form:"-" json:"rights" bson:"rights"`
+		Rights Rights `json:"rights" bson:"rights"`
 
 		// IP control fields (coming soon)
 		LastIP   uint32 `form:"-" json:"lastIP" bson:"lastIP"`
@@ -60,9 +60,11 @@ type (
 	Users struct {
 		list       map[string]*UsersStruct // key - login
 		listID     map[uint64]*UsersStruct // key - id
+		count      int
 		collection *mgo.Collection
 		sync.Mutex
-		afterAddFn func(*UsersStruct)
+		afterAddFn  func(*UsersStruct)
+		afterSaveFn func(*UsersStruct)
 		*Panel
 	}
 )
@@ -74,9 +76,12 @@ func (u *Users) init(panel *Panel) {
 	u.list = map[string]*UsersStruct{}
 	u.listID = map[uint64]*UsersStruct{}
 	u.afterAddFn = func(*UsersStruct) {}
+	u.afterSaveFn = func(*UsersStruct) {}
+	u.count, _ = u.collection.Count()
 
 	go func() {
 		for range time.Tick(time.Second * 10) {
+			u.count, _ = u.collection.Count()
 			u.loadUsers()
 			u.clearUsers()
 		}
@@ -90,17 +95,20 @@ func (u *Users) SetAddingFn(fn func(*UsersStruct)) {
 	u.Unlock()
 }
 
+// SetSavingFn set callback function that will be called after successful user saving
+func (u *Users) SetSavingFn(fn func(*UsersStruct)) {
+	u.Lock()
+	u.afterSaveFn = fn
+	u.Unlock()
+}
+
 // Add new user from struct
 func (u *Users) Add(user UsersStruct) error {
-	if _, err := govalidator.ValidateStruct(user); err != nil {
-		ers := []string{}
-		for k, v := range govalidator.ErrorsByField(err) {
-			ers = append(ers, k+": "+v)
-		}
-		return errors.New(strings.Join(ers, "<hr />"))
+	if err := u.Validate(&user); err != nil {
+		return err
 	}
-	if user.Password != user.Password2 {
-		return errors.New("Password mismatch!")
+	if len(user.Password) == 0 {
+		return errors.New("Password to short!")
 	}
 	user.ID = ai.Next(u.Panel.UsersCollection)
 	user.Name = sanitize.HTML(user.Name)
@@ -109,25 +117,54 @@ func (u *Users) Add(user UsersStruct) error {
 	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
 	user.Created = time.Now().Unix()
 	user.Updated = user.Created
-	user.Loaded = user.Created
-
-	if count, _ := u.collection.Count(); count == 0 {
-		u.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
-		u.collection.EnsureIndex(mgo.Index{Key: []string{"updated"}})
-		u.collection.EnsureIndex(mgo.Index{Key: []string{"created"}})
-	}
+	user.Demo = false
+	setUserDefaults(&user)
 
 	if err := u.collection.Insert(user); err == nil {
 		u.Lock()
 		u.list[user.Login] = &user
 		u.listID[user.ID] = &user
-		u.afterAddFn(&user)
 		u.Unlock()
+		go u.afterAddFn(&user)
 		return nil
 	} else {
 		if mgo.IsDup(err) {
 			return errors.New("User already exists!")
 		}
+		return errors.New("DB Error")
+	}
+}
+
+// Save exists user
+func (u *Users) Save(user *UsersStruct) error {
+	if err := u.Validate(user); err != nil {
+		return err
+	}
+	prevUser, exists := u.Get(user.ID)
+	if !exists {
+		return errors.New("User not found!")
+	}
+	user.Login = prevUser.Login
+	user.Created = prevUser.Created
+	user.Name = sanitize.HTML(user.Name)
+	user.Notice = sanitize.HTML(user.Notice)
+	if len(user.Password) > 0 {
+		user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+	} else {
+		user.Password = prevUser.Password
+	}
+	user.Updated = time.Now().Unix()
+	user.Demo = false
+	setUserDefaults(user)
+
+	if err := u.collection.UpdateId(user.ID, user); err == nil {
+		u.Lock()
+		u.list[user.Login] = user
+		u.listID[user.ID] = user
+		u.Unlock()
+		go u.afterSaveFn(user)
+		return nil
+	} else {
 		return errors.New("DB Error")
 	}
 }
@@ -181,7 +218,7 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 		result := &UsersStruct{}
 		if err := u.collection.Find(obj{"login": login, "deleted": false}).One(result); err == nil {
 			user = result
-			user.Loaded = time.Now().Unix()
+			setUserDefaults(user)
 			exists = true
 			u.Lock()
 			u.list[user.Login] = user
@@ -194,7 +231,7 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 		u.Unlock() // Unlock 2
 		return
 	}
-	user = getDummyUser()
+	user = u.GetDummyUser()
 	if u.Panel.DisableAuth {
 		user.Rights = Rights{
 			Groups: []string{"root", "demo"},
@@ -211,7 +248,7 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 		result := &UsersStruct{}
 		if err := u.collection.Find(obj{"_id": id, "deleted": false}).One(result); err == nil {
 			user = result
-			user.Loaded = time.Now().Unix()
+			setUserDefaults(user)
 			exists = true
 			u.Lock()
 			u.list[user.Login] = user
@@ -224,7 +261,7 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 		u.Unlock() // Unlock 2
 		return
 	}
-	user = getDummyUser()
+	user = u.GetDummyUser()
 	if u.Panel.DisableAuth {
 		user.Rights = Rights{
 			Groups: []string{"root", "demo"},
@@ -235,12 +272,17 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 
 // Length of users array
 func (u *Users) Length() int {
+	return u.count
+}
+
+// Length of users array
+func (u *Users) CacheLength() int {
 	u.Lock()
 	defer u.Unlock()
 	return len(u.list)
 }
 
-func getDummyUser() *UsersStruct {
+func (u *Users) GetDummyUser() *UsersStruct {
 	return &UsersStruct{
 		Name:  "",
 		Login: "",
@@ -250,5 +292,32 @@ func getDummyUser() *UsersStruct {
 		},
 		Settings: obj{},
 		Demo:     true,
+	}
+}
+
+func (u *Users) Validate(user *UsersStruct) error {
+	if _, err := govalidator.ValidateStruct(user); err != nil {
+		ers := []string{}
+		for k, v := range govalidator.ErrorsByField(err) {
+			ers = append(ers, k+": "+v)
+		}
+		return errors.New(strings.Join(ers, " \n"))
+	}
+	if user.Password != user.Password2 {
+		return errors.New("Password mismatch!")
+	}
+	return nil
+}
+
+func setUserDefaults(user *UsersStruct) {
+	user.Loaded = time.Now().Unix()
+	if user.Rights.Actions == nil {
+		user.Rights.Actions = []string{}
+	}
+	if user.Rights.Groups == nil {
+		user.Rights.Groups = []string{}
+	}
+	if user.Settings == nil {
+		user.Settings = obj{}
 	}
 }

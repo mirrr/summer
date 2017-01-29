@@ -33,7 +33,7 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 		g.Use(middle)
 	} else {
 		g.Use(func(c *gin.Context) {
-			user := getDummyUser()
+			user := a.Users.GetDummyUser()
 			user.Rights = Rights{
 				Groups: []string{"root"},
 			}
@@ -78,6 +78,14 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			a.fsCount, _ = a.fsCollection.Find(obj{"uc": a.UsersCollection}).Count()
 		}
 		if a.fsCount <= 0 {
+			FS := func() {
+				a.Users.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
+				a.Users.collection.EnsureIndex(mgo.Index{Key: []string{"updated"}})
+				a.Users.collection.EnsureIndex(mgo.Index{Key: []string{"created"}})
+				a.fsCollection.Insert(obj{"uc": a.UsersCollection, "commit": true})
+				a.fsCount = 1
+				go a.FirstStart()
+			}
 			if !disableAuth && !a.DisableFirstStart {
 				defer c.Abort()
 				login, e1 := c.GetPostForm("admin-z-login")
@@ -97,10 +105,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 						c.String(400, err.Error())
 						return
 					}
-
-					a.fsCollection.Insert(obj{"uc": a.UsersCollection, "commit": true})
-					a.fsCount = 1
-					go a.FirstStart()
+					FS()
 					c.String(200, "Ok")
 					return
 				}
@@ -109,9 +114,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				c.Abort()
 				return
 			} else {
-				a.fsCollection.Insert(obj{"uc": a.UsersCollection, "commit": true})
-				a.fsCount = 1
-				go a.FirstStart()
+				FS()
 			}
 		}
 
@@ -153,7 +156,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				}
 			}
 			if disableAuth {
-				user := getDummyUser()
+				user := a.Users.GetDummyUser()
 				c.Set("user", *user)
 				c.Set("login", "")
 				c.Next()
