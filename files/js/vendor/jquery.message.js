@@ -84,7 +84,6 @@
 		// Сообщение об ошибке в ajax
 		$.message.ajaxWarn = function (result) {
 			var msg;
-			console.log(result);
 
 			if (result) {
 				if (typeof result === 'object') {
@@ -116,4 +115,3 @@
 			}
 		};
 	}));
-
