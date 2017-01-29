@@ -81,17 +81,21 @@ func (m *Module) Ajax(c *gin.Context) {
 
 // Websockets  is default module's websockets method
 func (m *Module) Websockets(c *gin.Context) {
-	method := stripSlashes(strings.ToLower(c.Param("method")))
-	for websocketsRoute, websocketsFunc := range m.Settings.websockets {
-		if method == websocketsRoute {
-			if conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil); err == nil {
-				websocketsFunc(c, conn)
-				return
+	if c.MustGet("Allow").(bool) {
+		method := stripSlashes(strings.ToLower(c.Param("method")))
+		for websocketsRoute, websocketsFunc := range m.Settings.websockets {
+			if method == websocketsRoute {
+				if conn, err := wsupgrader.Upgrade(c.Writer, c.Request, nil); err == nil {
+					websocketsFunc(c, conn)
+					return
+				}
+				break
 			}
-			break
 		}
+		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+		return
 	}
-	c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+	c.String(403, `Accesss denied`)
 }
 
 // Page is default module's page rendering method
