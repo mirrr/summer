@@ -318,7 +318,7 @@
 						}
 						timerId = setTimeout(function () {
 							onChange($search.val());
-						}, 300);
+						}, 350);
 						oldText = $search.val();
 					}
 				});
