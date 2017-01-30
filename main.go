@@ -208,7 +208,7 @@ func (panel *Panel) correctPath() {
 		if panel.Path[len(panel.Path)-1] == '/' {
 			panel.Path = panel.Path[:len(panel.Path)-1]
 		}
-		if panel.Path[0] != '/' {
+		if len(panel.Path) > 0 && panel.Path[0] != '/' {
 			panel.Path = "/" + panel.Path
 		}
 	}
