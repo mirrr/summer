@@ -35,7 +35,7 @@ $(function () {
 				'top': top + $tr.outerHeight() / 2 + 'px',
 				'left': $table.offset().left + 5 + 'px',
 			});
-		}, 50);
+		}, 100);
 	});
 	$('body').on('mouseup', 'th.chb>label', function (event) {
 		var $chb = $(this).parent();
@@ -57,6 +57,6 @@ $(function () {
 				$checkboxes.closest('tr').removeClass('checked');
 				$('#float-grouper').fadeOut('300');
 			}
-		}, 50);
+		}, 100);
 	});
 });

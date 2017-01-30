@@ -65,7 +65,7 @@ $(function () {
 			placeholder: $select.attr("placeholder")
 		});
 	}
-	$('select').each(selectFn);
+	$('select:not(.custom)').each(selectFn);
 
 	/* Инициализация библиотеки всплывающего окна */
 	$.wbox.init({

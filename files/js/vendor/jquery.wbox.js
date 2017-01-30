@@ -126,10 +126,10 @@
 					suppressScrollX: true,
 					includePadding: false
 				});
-				$('body').on("touchmove", function (e) {
-					e.preventDefault();
-				});
 			}
+			$('body').on("touchmove", function (e) {
+				e.preventDefault();
+			});
 
 			$(settings.blures).addClass('w-blured');
 

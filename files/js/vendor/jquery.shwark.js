@@ -263,16 +263,13 @@ function shwOpen(template, options, $this, content) {
 
 
 (function (factory) {
-		if (typeof define === 'function' && define.amd) {
-			define(['jquery'], factory);
-		} else {
-			factory(jQuery);
-		}
+	if (typeof define === 'function' && define.amd) {
+		define(['jquery'], factory);
+	} else {
+		factory(jQuery);
 	}
-
-	(function ($) {
-		$.shwarkCloseAll = function () {
-			$('.shwark-wrapper').trigger('mouseup');
-		};
-	})
-);
+}(function ($) {
+	$.shwarkCloseAll = function () {
+		$('.shwark-wrapper').trigger('mouseup');
+	};
+}));
