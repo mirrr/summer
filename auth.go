@@ -121,17 +121,21 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 		// авторизация пользователя админки
 		login, e1 := c.GetPostForm("admin-z-login")
 		password, e2 := c.GetPostForm("admin-z-password")
+		cliIP := c.ClientIP()
+		if a.Panel.AuthSkipIP {
+			cliIP = ""
+		}
 		if !disableAuth && e1 && e2 {
 			if user, exists := a.Users.GetByLogin(login); exists && user.Password == H3hash(password+a.AuthSalt) {
 				if !user.Disabled && !user.Deleted {
 					setCookie(c, a.AuthPrefix+"login", login)
-					setCookie(c, a.AuthPrefix+"hash", H3hash(c.ClientIP()+user.Password+a.AuthSalt))
+					setCookie(c, a.AuthPrefix+"hash", H3hash(cliIP+user.Password+a.AuthSalt))
 					c.String(200, "Ok")
 				} else {
-					c.String(400, "Account disabled or waits for moderation.")
+					c.String(401, "Account disabled or waits for moderation.")
 				}
 			} else {
-				c.String(400, "Wrong password!")
+				c.String(401, "Wrong password!")
 			}
 			c.Abort()
 			return
@@ -139,7 +143,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			login, e1 := c.Cookie(a.AuthPrefix + "login")
 			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
 			if e1 == nil && e2 == nil {
-				if user, exists := a.Users.GetByLogin(login); exists && hash == H3hash(c.ClientIP()+user.Password+a.AuthSalt) {
+				if user, exists := a.Users.GetByLogin(login); exists && hash == H3hash(cliIP+user.Password+a.AuthSalt) {
 					if !user.Disabled && !user.Deleted {
 						if user.Root {
 							user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
@@ -163,7 +167,14 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				return
 			}
 		}
-		c.HTML(200, "login.html", gin.H{"panelPath": panelPath})
+
+		if strings.Contains(c.Request.Header.Get("Upgrade"), "websocket") ||
+			strings.Contains(c.Request.Header.Get("X-Requested-With"), "XMLHttpRequest") {
+
+			c.String(403, "Unauthorized request")
+		} else {
+			c.HTML(200, "login.html", gin.H{"panelPath": panelPath})
+		}
 		c.Abort()
 	}
 }
