@@ -52,7 +52,7 @@
 			}
 
 			$(settings.parent).append(that.wrap);
-			$(settings.parent).on('mousedown', '.w-wrap, .w-close, [type="cancel"]', function (event) {
+			$(settings.parent).on('mousedown', '.w-wrap, .w-close, .w-box [type="cancel"]', function (event) {
 				event = event || window.event;
 
 				if ($(event.target).hasClass('w-wrap') || $(event.target).hasClass('w-close') || $(event.target).attr('type') === 'cancel') {
