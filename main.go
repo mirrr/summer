@@ -20,7 +20,7 @@ type (
 		DefaultPage       string
 		AuthSalt          string
 		AuthPrefix        string                 // prefix for cookies names
-		AuthSkipIP        bool                   //disable using IP as salt for cookie hash generation
+		AuthSkipIP        bool                   // disable using IP as salt for cookie hash generation
 		Path              string                 // URL path of panel - "/" by default
 		Views             string                 // file path of ./templates directory
 		ViewsDoT          string                 // file path of doT.js templates directory
