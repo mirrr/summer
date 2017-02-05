@@ -115,6 +115,10 @@
 		};
 
 		$.tools.confirm = function (title, text, callback, target) {
+			title = title || window.toolsConfirmTitle;
+			text = text || window.toolsConfirmMessage;
+			var cancel = window.toolsConfirmCancel || 'Cancel';
+			var ok = window.toolsConfirmOk || 'OK';
 			if (typeof callback !== 'function') {
 				throw new Error('Not specified handler function');
 			}
@@ -123,8 +127,8 @@
 			});
 			$confirm.html('<div class="w-title unselectable">' + title +
 				'</div>' + (text ? '<div class="w-content-body">' + text + '</div>' : '') +
-				'<div class="form-footer"><button type="cancel" class="shwark-close">Cancel</button>' +
-				'<button type="submit">OK</button></div>')
+				'<div class="form-footer"><button type="cancel" class="shwark-close">' + cancel + '</button>' +
+				'<button type="submit">' + ok + '</button></div>')
 
 			close = shwOpen(null, {
 					wrapperBackground: 'rgba(0,0,0,0.3)',
@@ -160,7 +164,7 @@
 			if (typeof confirm !== 'function') {
 				confirm = function (element, event, callback) {
 					if ($(element).hasClass('need-confirm')) {
-						$.tools.confirm('Are you sure?', 'Are you sure that you want to perform this action?', function () {
+						$.tools.confirm(null, null, function () {
 							setTimeout(callback, 0);
 						}, $(element));
 					} else {
