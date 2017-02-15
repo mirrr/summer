@@ -52,7 +52,7 @@ func PostBind(c *gin.Context, ret interface{}) bool {
 		for k, v := range govalidator.ErrorsByField(err) {
 			ers = append(ers, k+": "+v)
 		}
-		c.String(400, strings.Join(ers, "<hr />"))
+		c.String(400, strings.Join(ers, "\n"))
 		return false
 	}
 	return true

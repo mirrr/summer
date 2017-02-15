@@ -115,8 +115,8 @@
 		};
 
 		$.tools.confirm = function (title, text, callback, target) {
-			title = title || window.toolsConfirmTitle;
-			text = text || window.toolsConfirmMessage;
+			title = title || window.toolsConfirmTitle || 'Are you sure?';
+			text = text || window.toolsConfirmMessage || 'Are you sure that you want to perform this action?';
 			var cancel = window.toolsConfirmCancel || 'Cancel';
 			var ok = window.toolsConfirmOk || 'OK';
 			if (typeof callback !== 'function') {

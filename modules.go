@@ -73,7 +73,7 @@ func (m *Module) Ajax(c *gin.Context) {
 				return
 			}
 		}
-		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+		c.String(404, `Method not found in module "`+m.Settings.Name+`"!`)
 		return
 	}
 	c.String(403, `Accesss denied`)
@@ -92,7 +92,7 @@ func (m *Module) Websockets(c *gin.Context) {
 				break
 			}
 		}
-		c.String(400, `Method not found in module "`+m.Settings.Name+`"!`)
+		c.String(404, `Method not found in module "`+m.Settings.Name+`"!`)
 		return
 	}
 	c.String(403, `Accesss denied`)
