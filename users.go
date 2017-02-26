@@ -181,6 +181,7 @@ func (u *Users) AddFrom(data interface{}) (error, uint64) {
 	user.ID = u.AI.Next(u.Panel.UsersCollection)
 	user.Name = sanitize.HTML(user.Name)
 	user.Login = sanitize.HTML(user.Login)
+	user.Email = sanitize.HTML(user.Email)
 	user.Notice = sanitize.HTML(user.Notice)
 	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
 	user.Created = time.Now().Unix()
@@ -216,6 +217,7 @@ func (u *Users) Save(user *UsersStruct) error {
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
+	user.Email = sanitize.HTML(user.Email)
 	user.Notice = sanitize.HTML(user.Notice)
 	if len(user.Password) > 0 {
 		user.Password = H3hash(user.Password + u.Panel.AuthSalt)
