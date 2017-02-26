@@ -71,9 +71,10 @@ type (
 	}
 )
 
-func UsersFarm(DBName, UsersCollection, AuthSalt, AuthPrefix, AICollection string) *Users {
-	if len(AICollection) == 0 {
-		AICollection = "ai"
+func UsersFarm(DBName, UsersCollection, AuthSalt string, AICollection ...string) *Users {
+	AIColl := "ai"
+	if len(AICollection) > 0 && len(AICollection[0]) > 0 {
+		AIColl = AICollection[0]
 	}
 	if len(UsersCollection) == 0 {
 		UsersCollection = "admins"
@@ -81,22 +82,18 @@ func UsersFarm(DBName, UsersCollection, AuthSalt, AuthPrefix, AICollection strin
 	if len(DBName) == 0 {
 		DBName = "summerPanel"
 	}
-	if len(AuthPrefix) == 0 {
-		AuthPrefix = "adm-summer-"
-	}
 	if len(AuthSalt) == 0 {
 		AuthSalt = "+Af761"
 	}
 	farm := &Panel{
 		Settings: Settings{
 			AuthSalt:        AuthSalt,
-			AuthPrefix:      AuthPrefix,
 			DBName:          DBName,
 			UsersCollection: UsersCollection,
-			AICollection:    AICollection,
+			AICollection:    AIColl,
 		},
 		Users: new(Users),
-		AI:    *ai.Create(mongo.DB(DBName).C(AICollection)),
+		AI:    *ai.Create(mongo.DB(DBName).C(AIColl)),
 	}
 	farm.Users.init(farm)
 	return farm.Users
