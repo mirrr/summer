@@ -6,7 +6,9 @@ import (
 	"github.com/night-codes/govalidator"
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
+	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"strings"
 	"sync"
 	"time"
@@ -29,7 +31,7 @@ type (
 		Password string `form:"password" json:"-" bson:"password" valid:"min(5)"`
 
 		// from form can be received string password value)
-		Password2 string `form:"password2" json:"-" bson:"-"`
+		Password2 string `form:"password2" json:"-" bson:"password2"`
 
 		// Default user language (Information field)
 		Lang string `form:"lang" json:"lang" bson:"lang" valid:"max(3)"`
@@ -58,25 +60,56 @@ type (
 		Demo bool `form:"-" json:"demo" bson:"-"`
 	}
 	Users struct {
+		rawList    map[string]*bson.Raw    // key - login
+		rawListID  map[uint64]*bson.Raw    // key - id
 		list       map[string]*UsersStruct // key - login
 		listID     map[uint64]*UsersStruct // key - id
 		count      int
 		collection *mgo.Collection
 		sync.Mutex
-		afterAddFn  func(*UsersStruct)
-		afterSaveFn func(*UsersStruct)
 		*Panel
 	}
 )
+
+func UsersFarm(DBName, UsersCollection, AuthSalt, AuthPrefix, AICollection string) *Users {
+	if len(AICollection) == 0 {
+		AICollection = "ai"
+	}
+	if len(UsersCollection) == 0 {
+		UsersCollection = "admins"
+	}
+	if len(DBName) == 0 {
+		DBName = "summerPanel"
+	}
+	if len(AuthPrefix) == 0 {
+		AuthPrefix = "adm-summer-"
+	}
+	if len(AuthSalt) == 0 {
+		AuthSalt = "+Af761"
+	}
+	farm := &Panel{
+		Settings: Settings{
+			AuthSalt:        AuthSalt,
+			AuthPrefix:      AuthPrefix,
+			DBName:          DBName,
+			UsersCollection: UsersCollection,
+			AICollection:    AICollection,
+		},
+		Users: new(Users),
+		AI:    *ai.Create(mongo.DB(DBName).C(AICollection)),
+	}
+	farm.Users.init(farm)
+	return farm.Users
+}
 
 func (u *Users) init(panel *Panel) {
 	u.Mutex = sync.Mutex{}
 	u.Panel = panel
 	u.collection = mongo.DB(panel.DBName).C(panel.UsersCollection)
+	u.rawList = map[string]*bson.Raw{}
+	u.rawListID = map[uint64]*bson.Raw{}
 	u.list = map[string]*UsersStruct{}
 	u.listID = map[uint64]*UsersStruct{}
-	u.afterAddFn = func(*UsersStruct) {}
-	u.afterSaveFn = func(*UsersStruct) {}
 	u.count, _ = u.collection.Count()
 
 	go func() {
@@ -88,20 +121,6 @@ func (u *Users) init(panel *Panel) {
 	}()
 }
 
-// SetAddingFn set callback function that will be called after successful user adding
-func (u *Users) SetAddingFn(fn func(*UsersStruct)) {
-	u.Lock()
-	u.afterAddFn = fn
-	u.Unlock()
-}
-
-// SetSavingFn set callback function that will be called after successful user saving
-func (u *Users) SetSavingFn(fn func(*UsersStruct)) {
-	u.Lock()
-	u.afterSaveFn = fn
-	u.Unlock()
-}
-
 // Add new user from struct
 func (u *Users) Add(user UsersStruct) error {
 	if err := u.Validate(&user); err != nil {
@@ -110,7 +129,7 @@ func (u *Users) Add(user UsersStruct) error {
 	if len(user.Password) == 0 {
 		return errors.New("Password to short!")
 	}
-	user.ID = ai.Next(u.Panel.UsersCollection)
+	user.ID = u.AI.Next(u.Panel.UsersCollection)
 	user.Name = sanitize.HTML(user.Name)
 	user.Login = sanitize.HTML(user.Login)
 	user.Notice = sanitize.HTML(user.Notice)
@@ -119,19 +138,69 @@ func (u *Users) Add(user UsersStruct) error {
 	user.Updated = user.Created
 	user.Demo = false
 	setUserDefaults(&user)
-
+	msh, err := bson.Marshal(user)
+	if err != nil {
+		return err
+	}
+	rawUser := bson.Raw{Kind: 3, Data: msh}
 	if err := u.collection.Insert(user); err == nil {
 		u.Lock()
 		u.list[user.Login] = &user
 		u.listID[user.ID] = &user
+		u.rawList[user.Login] = &rawUser
+		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
-		go u.afterAddFn(&user)
 		return nil
 	} else {
 		if mgo.IsDup(err) {
 			return errors.New("User already exists!")
 		}
 		return errors.New("DB Error")
+	}
+}
+
+// Add new user from struct
+func (u *Users) AddFrom(data interface{}) (error, uint64) {
+	msh, err := bson.Marshal(data)
+	if err != nil {
+		return err, 0
+	}
+	rawUser := bson.Raw{Kind: 3, Data: msh}
+
+	user := &UsersStruct{}
+	if err := rawUser.Unmarshal(&user); err != nil {
+		return err, 0
+	}
+
+	if err := u.Validate(user); err != nil {
+		return err, 0
+	}
+	if len(user.Password) == 0 {
+		return errors.New("Password to short!"), 0
+	}
+	user.ID = u.AI.Next(u.Panel.UsersCollection)
+	user.Name = sanitize.HTML(user.Name)
+	user.Login = sanitize.HTML(user.Login)
+	user.Notice = sanitize.HTML(user.Notice)
+	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+	user.Created = time.Now().Unix()
+	user.Updated = user.Created
+	user.Demo = false
+	setUserDefaults(user)
+
+	insert := obj{}
+	rawUser.Unmarshal(&insert)
+	insert["_id"] = user.ID
+
+	errIns := u.collection.Insert(insert)
+	if err := u.collection.UpdateId(user.ID, obj{"$set": user}); err == nil && errIns == nil {
+		u.Get(user.ID)
+		return nil, user.ID
+	} else {
+		if mgo.IsDup(errIns) {
+			return errors.New("User already exists!"), 0
+		}
+		return errors.New("DB Error"), 0
 	}
 }
 
@@ -156,13 +225,67 @@ func (u *Users) Save(user *UsersStruct) error {
 	user.Updated = time.Now().Unix()
 	user.Demo = false
 	setUserDefaults(user)
+	msh, err := bson.Marshal(user)
+	if err != nil {
+		return err
+	}
+	rawUser := bson.Raw{Kind: 3, Data: msh}
 
 	if err := u.collection.UpdateId(user.ID, user); err == nil {
 		u.Lock()
 		u.list[user.Login] = user
 		u.listID[user.ID] = user
+		u.rawList[user.Login] = &rawUser
+		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
-		go u.afterSaveFn(user)
+		return nil
+	} else {
+		return errors.New("DB Error")
+	}
+}
+
+// Save exists user from own struct
+func (u *Users) SaveFrom(data interface{}) error {
+	msh, err := bson.Marshal(data)
+	if err != nil {
+		return err
+	}
+	rawUser := bson.Raw{Kind: 3, Data: msh}
+	user := &UsersStruct{}
+	if err := rawUser.Unmarshal(user); err != nil {
+		return err
+	}
+	if err := u.Validate(user); err != nil {
+		return err
+	}
+	if user.ID == 0 {
+		return errors.New("Wrong ID")
+	}
+	prevUser, exists := u.Get(user.ID)
+	if !exists {
+		return errors.New("User not found!")
+	}
+	user.Login = prevUser.Login
+	user.Created = prevUser.Created
+	user.Name = sanitize.HTML(user.Name)
+	user.Notice = sanitize.HTML(user.Notice)
+	if len(user.Password) > 0 {
+		user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+	} else {
+		user.Password = prevUser.Password
+	}
+	user.Updated = time.Now().Unix()
+	user.Demo = false
+	setUserDefaults(user)
+
+	u.collection.UpdateId(user.ID, obj{"$set": data})
+	if err := u.collection.UpdateId(user.ID, obj{"$set": user}); err == nil {
+		u.Lock()
+		u.list[user.Login] = user
+		u.listID[user.ID] = user
+		u.rawList[user.Login] = &rawUser
+		u.rawListID[user.ID] = &rawUser
+		u.Unlock()
 		return nil
 	} else {
 		return errors.New("DB Error")
@@ -179,20 +302,25 @@ func (u *Users) loadUsers() {
 	u.Unlock()
 	now := time.Now().Unix()
 	result := []UsersStruct{}
+	resultRaw := []bson.Raw{}
 	request := obj{
 		"_id": obj{"$in": ids},
 		"$or": arr{
-			obj{"updated": obj{"$gte": now - 30}},
-			obj{"created": obj{"$gte": now - 30}},
+			obj{"updated": obj{"$gte": now - 60}},
+			obj{"created": obj{"$gte": now - 60}},
 		},
 	}
-	u.collection.Find(request).All(&result)
+	cursor := u.collection.Find(request)
+	cursor.All(&result)
+	cursor.All(&resultRaw)
 
 	u.Lock()
 	for key, user := range result {
 		result[key].Loaded = now
 		u.list[user.Login] = &result[key]
 		u.listID[user.ID] = &result[key]
+		u.rawList[user.Login] = &resultRaw[key]
+		u.rawListID[user.ID] = &resultRaw[key]
 	}
 	u.Unlock()
 }
@@ -205,7 +333,9 @@ func (u *Users) clearUsers() {
 		to := time.Now().Unix() - 3660
 		if user.Loaded < to || user.Deleted {
 			delete(u.list, user.Login)
+			delete(u.rawList, user.Login)
 			delete(u.listID, id)
+			delete(u.rawListID, id)
 		}
 	}
 }
@@ -240,6 +370,39 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 	return
 }
 
+// FetchByLogin returns user data by login
+func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
+	rawUser := &bson.Raw{}
+	u.Lock() // Lock 1
+	if rawUser, exists = u.rawList[login]; !exists {
+		u.Unlock() // Unlock 1-1 (IF)
+		rawUser = &bson.Raw{}
+		result := &UsersStruct{}
+		cursor := u.collection.Find(obj{"login": login, "deleted": false})
+		if err := cursor.One(result); err == nil {
+			cursor.One(rawUser)
+
+			setUserDefaults(result)
+			exists = true
+			u.Lock() // Lock 2
+			u.list[result.Login] = result
+			u.listID[result.ID] = result
+			u.rawList[result.Login] = rawUser
+			u.rawListID[result.ID] = rawUser
+			u.Unlock() // Unlock 2
+			rawUser.Unmarshal(user)
+			return
+		}
+	} else {
+		u.list[login].Loaded = time.Now().Unix()
+		u.Unlock() // Unlock 1-2 (ELSE)
+		rawUser.Unmarshal(user)
+		return
+	}
+	rawUser.Unmarshal(user)
+	return
+}
+
 // Get returns user struct by id
 func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 	u.Lock()
@@ -267,6 +430,44 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 			Groups: []string{"root", "demo"},
 		}
 	}
+	return
+}
+
+// Fetch returns user data by login
+func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
+	rawUser := &bson.Raw{}
+	u.Lock() // Lock 1
+	if rawUser, exists = u.rawListID[id]; !exists {
+		u.Unlock() // Unlock 1-1 (IF)
+		rawUser = &bson.Raw{}
+		result := &UsersStruct{}
+		cursor := u.collection.Find(obj{"_id": id, "deleted": false})
+		if err := cursor.One(result); err == nil {
+			cursor.One(rawUser)
+
+			setUserDefaults(result)
+			exists = true
+			u.Lock() // Lock 2
+			u.list[result.Login] = result
+			u.listID[result.ID] = result
+			u.rawList[result.Login] = rawUser
+			u.rawListID[result.ID] = rawUser
+			u.Unlock() // Unlock 2
+			rawUser.Unmarshal(user)
+			return
+		}
+	} else {
+		u.listID[id].Loaded = time.Now().Unix()
+		u.Unlock() // Unlock 1-2 (ELSE)
+		rawUser.Unmarshal(user)
+		return
+	}
+	rawUser.Unmarshal(user)
+	return
+}
+
+func (u *Users) GetFromContextTo(c *gin.Context, user interface{}) (exists bool) {
+	exists = u.GetByLoginTo(c.MustGet("login").(string), user)
 	return
 }
 
@@ -306,6 +507,7 @@ func (u *Users) Validate(user *UsersStruct) error {
 	if user.Password != user.Password2 {
 		return errors.New("Password mismatch!")
 	}
+	user.Password2 = ""
 	return nil
 }
 

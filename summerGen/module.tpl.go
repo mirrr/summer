@@ -8,7 +8,6 @@ var moduleTpl = template.Must(template.New("module.go").Parse(`package {{if .Ven
 
 import (
 	"github.com/kennygrant/sanitize"
-	"github.com/night-codes/mgo-ai"
 	"gopkg.in/gin-gonic/gin.v1"{{if .AddSearch}}
 	"gopkg.in/mgo.v2/bson"{{end}}
 	"gopkg.in/night-codes/summer.v1"
@@ -68,7 +67,7 @@ func (m *{{.Name}}Module) Add(c *gin.Context) {
 	if !summer.PostBind(c, &result) {
 		return
 	}
-	result.ID = ai.Next("{{.name}}")
+	result.ID = panel.AI.Next("{{.name}}")
 	result.Created = time.Now()
 	result.Updated = time.Now()
 	result.Name = sanitize.HTML(result.Name)

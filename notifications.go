@@ -1,7 +1,6 @@
 package summer
 
 import (
-	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
 	"gopkg.in/mgo.v2"
 	"sync"
@@ -27,32 +26,32 @@ type (
 	}
 )
 
-func (u *notify) init(panel *Panel) {
-	u.Mutex = sync.Mutex{}
-	u.Panel = panel
-	u.collection = mongo.DB(panel.DBName).C(panel.NotifyCollection)
-	u.list = map[uint64]*NotifyStruct{}
+func (n *notify) init(panel *Panel) {
+	n.Mutex = sync.Mutex{}
+	n.Panel = panel
+	n.collection = mongo.DB(panel.DBName).C(panel.NotifyCollection)
+	n.list = map[uint64]*NotifyStruct{}
 	go func() {
-		u.tick()
+		n.tick()
 		for range time.Tick(time.Second * 10) {
-			u.tick()
+			n.tick()
 		}
 	}()
 }
 
 // Add new notify from struct
-func (u *notify) Add(ntf NotifyStruct) error {
-	ntf.ID = ai.Next(u.Panel.NotifyCollection)
+func (n *notify) Add(ntf NotifyStruct) error {
+	ntf.ID = n.AI.Next(n.Panel.NotifyCollection)
 	ntf.Created = uint(time.Now().Unix() / 60)
 	ntf.Updated = ntf.Created
 
-	if err := u.collection.Insert(ntf); err == nil {
-		u.Lock()
-		defer u.Unlock()
-		if len(u.list) == 0 {
-			u.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
+	if err := n.collection.Insert(ntf); err == nil {
+		n.Lock()
+		defer n.Unlock()
+		if len(n.list) == 0 {
+			n.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
 		}
-		u.list[ntf.ID] = &ntf
+		n.list[ntf.ID] = &ntf
 		return nil
 	} else {
 		return err
@@ -60,21 +59,21 @@ func (u *notify) Add(ntf NotifyStruct) error {
 }
 
 // get array of notify
-func (u *notify) tick() {
+func (n *notify) tick() {
 	result := []NotifyStruct{}
-	u.collection.Find(obj{"deleted": false}).All(&result)
+	n.collection.Find(obj{"deleted": false}).All(&result)
 
-	u.Lock()
-	defer u.Unlock()
-	u.list = map[uint64]*NotifyStruct{}
+	n.Lock()
+	defer n.Unlock()
+	n.list = map[uint64]*NotifyStruct{}
 	for key, ntf := range result {
-		u.list[ntf.ID] = &result[key]
+		n.list[ntf.ID] = &result[key]
 	}
 }
 
 // Length of array of notify
-func (u *notify) Length() int {
-	u.Lock()
-	defer u.Unlock()
-	return len(u.list)
+func (n *notify) Length() int {
+	n.Lock()
+	defer n.Unlock()
+	return len(n.list)
 }

@@ -59,6 +59,7 @@ type (
 
 		auth     *auth
 		menuList *menuList
+		AI       ai.AI
 	}
 )
 
@@ -152,7 +153,7 @@ func (panel *Panel) init() {
 	panel.initTpl()
 
 	// init autoincrement module
-	ai.Connect(mongo.DB(panel.DBName).C(panel.AICollection))
+	panel.AI = *ai.Create(mongo.DB(panel.DBName).C(panel.AICollection))
 
 	// static files
 	panel.Engine.Use(gzipper)
