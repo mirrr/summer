@@ -68,6 +68,13 @@ func (r PageTemplate) Instance(name string, data interface{}) render.Render {
 	}
 }
 
+func (r PageRender) WriteContentType(w http.ResponseWriter) {
+	header := w.Header()
+	if val := header["Content-Type"]; len(val) == 0 {
+		header["Content-Type"] = []string{"text/html; charset=utf-8"}
+	}
+}
+
 func (r PageRender) Render(w http.ResponseWriter) error {
 	header := w.Header()
 	if val := header["Content-Type"]; len(val) == 0 {
