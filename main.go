@@ -32,6 +32,8 @@ type (
 		Debug             bool                   // show `gin` debugging messages
 		Vars              map[string]interface{} // variables, that can be used in templates {{var "variableName"}}
 		TFuncMap          template.FuncMap       // `gin` template functions
+		MakeEngineFn      func(*gin.Engine)      // Engine make callback
+		MakeRouterGroupFn func(*gin.RouterGroup) // RouterGroup make callback
 		FirstStart        func()                 // function called after first user creation
 		DisableAuth       bool                   // if TRUE - without summer auth
 		DisableFirstStart bool                   // if TRUE - without first user creating (FirstStart function don't called)
@@ -75,21 +77,23 @@ func Create(s Settings) *Panel {
 	}
 	panel := Panel{
 		Settings: Settings{
-			Port:            8080,
-			AuthSalt:        "+Af761",
-			AuthPrefix:      "adm-summer-",
-			Title:           "Summer Panel",
-			Path:            "",
-			Views:           "templates/main",
-			ViewsDoT:        "templates/doT.js",
-			Files:           "files",
-			DBName:          "summerPanel",
-			DefaultPage:     "/settings",
-			UsersCollection: "admins",
-			AICollection:    "ai",
-			Vars:            map[string]interface{}{},
-			FirstStart:      func() {},
-			Engine:          engine,
+			Port:              8080,
+			AuthSalt:          "+Af761",
+			AuthPrefix:        "adm-summer-",
+			Title:             "Summer Panel",
+			Path:              "",
+			Views:             "templates/main",
+			ViewsDoT:          "templates/doT.js",
+			Files:             "files",
+			DBName:            "summerPanel",
+			DefaultPage:       "/settings",
+			UsersCollection:   "admins",
+			AICollection:      "ai",
+			Vars:              map[string]interface{}{},
+			FirstStart:        func() {},
+			MakeEngineFn:      func(*gin.Engine) {},
+			MakeRouterGroupFn: func(*gin.RouterGroup) {},
+			Engine:            engine,
 		},
 		menuList: createMenuList(),
 		Modules:  createModuleList(),
@@ -102,6 +106,7 @@ func Create(s Settings) *Panel {
 	}
 	// apply default settings
 	extend(&panel.Settings, &s)
+	panel.MakeEngineFn(panel.Engine)
 	panel.init()
 
 	return &panel
@@ -162,6 +167,7 @@ func (panel *Panel) init() {
 
 	// main rout group
 	panel.RouterGroup = panel.Engine.Group(panel.Path)
+	panel.MakeRouterGroupFn(panel.RouterGroup)
 	panel.RouterGroup.GET("/", func(c *gin.Context) {
 		c.Header("Expires", time.Now().String())
 		c.Header("Cache-Control", "no-cache")
