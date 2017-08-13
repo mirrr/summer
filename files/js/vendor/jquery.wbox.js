@@ -66,7 +66,7 @@
 		};
 
 		this.updatePosition = function () {
-			var maxHeight = Number(($(window).height() * 0.85).toFixed(0));
+			var maxHeight = Number(($(window).height() * 0.92).toFixed(0));
 
 			that.content.css({
 				'max-height': (maxHeight - that.title.outerHeight()) + 'px'

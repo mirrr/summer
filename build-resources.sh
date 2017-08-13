@@ -33,9 +33,9 @@ compileLogin=$(echo "${vendor}/jquery-2.2.4.js" \
 "${vendor}/nprogress.js" \
 "${vendor}/jquery.ajaxHelper.js")
 
-uglifyjs --source-map "${build}/main.js.map" --source-map-root "/" --source-map-url "/${build}/main.js.map" -o "${build}/main.js" $compile "files/js/common.js"
+uglifyjs --source-map filename="${build}/main.js.map" --source-map-root "/" --source-map-url "/${build}/main.js.map" -o "${build}/main.js" $compile "files/js/common.js"
 
-uglifyjs --source-map "${build}/login.js.map" --source-map-root "/" --source-map-url "/${build}/login.js.map" -o "${build}/login.js" $compileLogin
+uglifyjs --source-map filename="${build}/login.js.map" --source-map-root "/" --source-map-url "/${build}/login.js.map" -o "${build}/login.js" $compileLogin
 
 cd "files/less"
 lessc --clean-css="--s1 --advanced --compatibility=ie8" style.less > ../build/style.css

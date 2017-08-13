@@ -46,7 +46,21 @@ func getSite(name string) interface{} {
 
 // PostBind binds data from post request and validates them
 func PostBind(c *gin.Context, ret interface{}) bool {
-	c.BindWith(ret, binding.Form)
+	c.ShouldBindWith(ret, binding.Form)
+	if _, err := govalidator.ValidateStruct(ret); err != nil {
+		ers := []string{}
+		for k, v := range govalidator.ErrorsByField(err) {
+			ers = append(ers, k+": "+v)
+		}
+		c.String(400, strings.Join(ers, "\n"))
+		return false
+	}
+	return true
+}
+
+// JSONBind binds data from json request and validates them
+func JSONBind(c *gin.Context, ret interface{}) bool {
+	c.ShouldBindWith(ret, binding.JSON)
 	if _, err := govalidator.ValidateStruct(ret); err != nil {
 		ers := []string{}
 		for k, v := range govalidator.ErrorsByField(err) {
