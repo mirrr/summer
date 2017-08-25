@@ -389,14 +389,10 @@ func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 			u.rawList[result.Login] = rawUser
 			u.rawListID[result.ID] = rawUser
 			u.Unlock() // Unlock 2
-			rawUser.Unmarshal(user)
-			return
 		}
 	} else {
 		u.list[login].Loaded = time.Now().Unix()
 		u.Unlock() // Unlock 1-2 (ELSE)
-		rawUser.Unmarshal(user)
-		return
 	}
 	rawUser.Unmarshal(user)
 	return
@@ -404,23 +400,23 @@ func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 
 // Get returns user struct by id
 func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
-	u.Lock()
+	u.Lock() // Lock 1
 	if user, exists = u.listID[id]; !exists {
-		u.Unlock() // Unlock 1
+		u.Unlock() // Unlock 1-1
 		result := &UsersStruct{}
 		if err := u.collection.Find(obj{"_id": id, "deleted": false}).One(result); err == nil {
 			user = result
 			setUserDefaults(user)
 			exists = true
-			u.Lock()
+			u.Lock() // Lock 2
 			u.list[user.Login] = user
 			u.listID[user.ID] = user
-			u.Unlock()
+			u.Unlock() // Unlock 2
 			return
 		}
 	} else {
 		u.listID[id].Loaded = time.Now().Unix()
-		u.Unlock() // Unlock 2
+		u.Unlock() // Unlock 1-2
 		return
 	}
 	user = u.GetDummyUser()
@@ -466,7 +462,7 @@ func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
 }
 
 func (u *Users) GetFromContextTo(c *gin.Context, user interface{}) (exists bool) {
-	exists = u.GetByLoginTo(c.MustGet("login").(string), user)
+	exists = u.GetTo((c.MustGet("user").(UsersStruct)).ID, user)
 	return
 }
 
