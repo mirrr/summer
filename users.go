@@ -9,6 +9,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/night-codes/types.v1"
 	"strings"
 	"sync"
 	"time"
@@ -211,6 +212,9 @@ func (u *Users) Save(user *UsersStruct) error {
 	if !exists {
 		return errors.New("User not found!")
 	}
+	if user.Login != prevUser.Login || user.ID != prevUser.ID {
+		panic("Не совпадают данные!!!")
+	}
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
@@ -263,6 +267,9 @@ func (u *Users) SaveFrom(data interface{}) error {
 	prevUser, exists := u.Get(user.ID)
 	if !exists {
 		return errors.New("User not found!")
+	}
+	if user.Login != prevUser.Login || user.ID != prevUser.ID {
+		panic("Не совпадают данные!!!")
 	}
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
@@ -372,6 +379,7 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 // FetchByLogin returns user data by login
 func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 	rawUser := &bson.Raw{}
+	tp := 0
 	u.Lock() // Lock 1
 	if rawUser, exists = u.rawList[login]; !exists {
 		u.Unlock() // Unlock 1-1 (IF)
@@ -389,12 +397,20 @@ func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 			u.rawList[result.Login] = rawUser
 			u.rawListID[result.ID] = rawUser
 			u.Unlock() // Unlock 2
+			tp = 1
 		}
 	} else {
 		u.list[login].Loaded = time.Now().Unix()
 		u.Unlock() // Unlock 1-2 (ELSE)
+		tp = 2
 	}
+
+	testuser := &UsersStruct{}
 	rawUser.Unmarshal(user)
+	rawUser.Unmarshal(testuser)
+	if login != testuser.Login {
+		panic("Не совпадают данные!!! tp: " + types.String(tp))
+	}
 	return
 }
 
@@ -430,6 +446,7 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 
 // Fetch returns user data by login
 func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
+	tp := 0
 	rawUser := &bson.Raw{}
 	u.Lock() // Lock 1
 	if rawUser, exists = u.rawListID[id]; !exists {
@@ -448,16 +465,20 @@ func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
 			u.rawList[result.Login] = rawUser
 			u.rawListID[result.ID] = rawUser
 			u.Unlock() // Unlock 2
-			rawUser.Unmarshal(user)
-			return
+			tp = 1
 		}
 	} else {
 		u.listID[id].Loaded = time.Now().Unix()
 		u.Unlock() // Unlock 1-2 (ELSE)
-		rawUser.Unmarshal(user)
-		return
+		tp = 2
 	}
+
+	testuser := &UsersStruct{}
 	rawUser.Unmarshal(user)
+	rawUser.Unmarshal(testuser)
+	if id != testuser.ID {
+		panic("Не совпадают данные!!! tp: " + types.String(tp))
+	}
 	return
 }
 
