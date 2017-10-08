@@ -68,6 +68,7 @@ type (
 		count      int
 		collection *mgo.Collection
 		sync.Mutex
+		mutUsers sync.Mutex
 		*Panel
 	}
 )
@@ -212,9 +213,6 @@ func (u *Users) Save(user *UsersStruct) error {
 	if !exists {
 		return errors.New("User not found!")
 	}
-	if user.Login != prevUser.Login || user.ID != prevUser.ID {
-		panic("Не совпадают данные!!!")
-	}
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
@@ -268,9 +266,6 @@ func (u *Users) SaveFrom(data interface{}) error {
 	if !exists {
 		return errors.New("User not found!")
 	}
-	if user.Login != prevUser.Login || user.ID != prevUser.ID {
-		panic("Не совпадают данные!!!")
-	}
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
@@ -307,7 +302,6 @@ func (u *Users) loadUsers() {
 	}
 	u.Unlock()
 	now := time.Now().Unix()
-	result := []UsersStruct{}
 	resultRaw := []bson.Raw{}
 	request := obj{
 		"_id": obj{"$in": ids},
@@ -316,15 +310,15 @@ func (u *Users) loadUsers() {
 			obj{"created": obj{"$gte": now - 60}},
 		},
 	}
-	cursor := u.collection.Find(request)
-	cursor.All(&result)
-	cursor.All(&resultRaw)
+	u.collection.Find(request).All(&resultRaw)
 
 	u.Lock()
-	for key, user := range result {
-		result[key].Loaded = now
-		u.list[user.Login] = &result[key]
-		u.listID[user.ID] = &result[key]
+	for key, _ := range resultRaw {
+		user := UsersStruct{}
+		resultRaw[key].Unmarshal(&user)
+		user.Loaded = now
+		u.list[user.Login] = &user
+		u.listID[user.ID] = &user
 		u.rawList[user.Login] = &resultRaw[key]
 		u.rawListID[user.ID] = &resultRaw[key]
 	}
@@ -379,15 +373,13 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 // FetchByLogin returns user data by login
 func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 	rawUser := &bson.Raw{}
-	tp := 0
 	u.Lock() // Lock 1
 	if rawUser, exists = u.rawList[login]; !exists {
 		u.Unlock() // Unlock 1-1 (IF)
 		rawUser = &bson.Raw{}
-		result := &UsersStruct{}
-		cursor := u.collection.Find(obj{"login": login, "deleted": false})
-		if err := cursor.One(result); err == nil {
-			cursor.One(rawUser)
+		if err := u.collection.Find(obj{"login": login, "deleted": false}).One(rawUser); err == nil {
+			result := &UsersStruct{}
+			rawUser.Unmarshal(result)
 
 			setUserDefaults(result)
 			exists = true
@@ -397,20 +389,16 @@ func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 			u.rawList[result.Login] = rawUser
 			u.rawListID[result.ID] = rawUser
 			u.Unlock() // Unlock 2
-			tp = 1
+		} else {
+			return
 		}
 	} else {
+		exists = true
 		u.list[login].Loaded = time.Now().Unix()
 		u.Unlock() // Unlock 1-2 (ELSE)
-		tp = 2
 	}
 
-	testuser := &UsersStruct{}
 	rawUser.Unmarshal(user)
-	rawUser.Unmarshal(testuser)
-	if login != testuser.Login {
-		panic("Не совпадают данные!!! tp: " + types.String(tp))
-	}
 	return
 }
 
@@ -446,16 +434,14 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 
 // Fetch returns user data by login
 func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
-	tp := 0
 	rawUser := &bson.Raw{}
 	u.Lock() // Lock 1
 	if rawUser, exists = u.rawListID[id]; !exists {
 		u.Unlock() // Unlock 1-1 (IF)
 		rawUser = &bson.Raw{}
-		result := &UsersStruct{}
-		cursor := u.collection.Find(obj{"_id": id, "deleted": false})
-		if err := cursor.One(result); err == nil {
-			cursor.One(rawUser)
+		if err := u.collection.Find(obj{"_id": id, "deleted": false}).One(rawUser); err == nil {
+			result := &UsersStruct{}
+			rawUser.Unmarshal(result)
 
 			setUserDefaults(result)
 			exists = true
@@ -465,24 +451,21 @@ func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
 			u.rawList[result.Login] = rawUser
 			u.rawListID[result.ID] = rawUser
 			u.Unlock() // Unlock 2
-			tp = 1
+		} else {
+			return
 		}
 	} else {
 		u.listID[id].Loaded = time.Now().Unix()
 		u.Unlock() // Unlock 1-2 (ELSE)
-		tp = 2
 	}
 
-	testuser := &UsersStruct{}
 	rawUser.Unmarshal(user)
-	rawUser.Unmarshal(testuser)
-	if id != testuser.ID {
-		panic("Не совпадают данные!!! tp: " + types.String(tp))
-	}
 	return
 }
 
 func (u *Users) GetFromContextTo(c *gin.Context, user interface{}) (exists bool) {
+	u.mutUsers.Lock()
+	defer u.mutUsers.Unlock()
 	exists = u.GetTo((c.MustGet("user").(UsersStruct)).ID, user)
 	return
 }
