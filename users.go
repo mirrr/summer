@@ -9,7 +9,6 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/night-codes/types.v1"
 	"strings"
 	"sync"
 	"time"
