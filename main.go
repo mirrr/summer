@@ -41,6 +41,8 @@ type (
 		CSS               []string               // external CSS resources
 		RouterGroup       *gin.RouterGroup
 		Engine            *gin.Engine
+		HashDBFn          func(login, password, authSalt string) string
+		HashCookieFn      func(login, password, authSalt, ip, userAgent string) string
 	}
 
 	//Panel struct
@@ -93,6 +95,8 @@ func Create(s Settings) *Panel {
 			FirstStart:        func() {},
 			MakeEngineFn:      func(*gin.Engine) {},
 			MakeRouterGroupFn: func(*gin.RouterGroup) {},
+			HashDBFn:          func(login, password, authSalt string) string { return H3hash(password + authSalt) },
+			HashCookieFn:      func(login, dbpass, authSalt, ip, userAgent string) string { return H3hash(ip + dbpass + authSalt) },
 			Engine:            engine,
 		},
 		menuList: createMenuList(),

@@ -122,14 +122,15 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 		login, e1 := c.GetPostForm("admin-z-login")
 		password, e2 := c.GetPostForm("admin-z-password")
 		cliIP := c.ClientIP()
+		userAgent := c.Request.Header.Get("User-Agent")
 		if a.Panel.AuthSkipIP {
 			cliIP = ""
 		}
 		if !disableAuth && e1 && e2 {
-			if user, exists := a.Users.GetByLogin(login); exists && user.Password == H3hash(password+a.AuthSalt) {
+			if user, exists := a.Users.GetByLogin(login); exists && user.Password == a.HashDBFn(login, password, a.AuthSalt) {
 				if !user.Disabled && !user.Deleted {
 					setCookie(c, a.AuthPrefix+"login", login)
-					setCookie(c, a.AuthPrefix+"hash", H3hash(cliIP+user.Password+a.AuthSalt))
+					setCookie(c, a.AuthPrefix+"hash", a.HashCookieFn(login, user.Password, a.AuthSalt, cliIP, userAgent))
 					c.String(200, "Ok")
 				} else {
 					c.String(401, "Account disabled or waits for moderation.")
@@ -143,7 +144,7 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			login, e1 := c.Cookie(a.AuthPrefix + "login")
 			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
 			if e1 == nil && e2 == nil {
-				if user, exists := a.Users.GetByLogin(login); exists && hash == H3hash(cliIP+user.Password+a.AuthSalt) {
+				if user, exists := a.Users.GetByLogin(login); exists && hash == a.HashCookieFn(login, user.Password, a.AuthSalt, cliIP, userAgent) {
 					if !user.Disabled && !user.Deleted {
 						if user.Root {
 							user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})

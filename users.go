@@ -131,7 +131,7 @@ func (u *Users) Add(user UsersStruct) error {
 	user.Name = sanitize.HTML(user.Name)
 	user.Login = sanitize.HTML(user.Login)
 	user.Notice = sanitize.HTML(user.Notice)
-	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+	user.Password = u.Panel.HashDBFn(user.Login, user.Password, u.Panel.AuthSalt)
 	user.Created = time.Now().Unix()
 	user.Updated = user.Created
 	user.Demo = false
@@ -181,7 +181,7 @@ func (u *Users) AddFrom(data interface{}) (error, uint64) {
 	user.Login = sanitize.HTML(user.Login)
 	user.Email = sanitize.HTML(user.Email)
 	user.Notice = sanitize.HTML(user.Notice)
-	user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+	user.Password = u.Panel.HashDBFn(user.Login, user.Password, u.Panel.AuthSalt)
 	user.Created = time.Now().Unix()
 	user.Updated = user.Created
 	user.Demo = false
@@ -218,7 +218,7 @@ func (u *Users) Save(user *UsersStruct) error {
 	user.Email = sanitize.HTML(user.Email)
 	user.Notice = sanitize.HTML(user.Notice)
 	if len(user.Password) > 0 {
-		user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+		user.Password = u.Panel.HashDBFn(user.Login, user.Password, u.Panel.AuthSalt)
 	} else {
 		user.Password = prevUser.Password
 	}
@@ -270,7 +270,7 @@ func (u *Users) SaveFrom(data interface{}) error {
 	user.Name = sanitize.HTML(user.Name)
 	user.Notice = sanitize.HTML(user.Notice)
 	if len(user.Password) > 0 {
-		user.Password = H3hash(user.Password + u.Panel.AuthSalt)
+		user.Password = u.Panel.HashDBFn(user.Login, user.Password, u.Panel.AuthSalt)
 	} else {
 		user.Password = prevUser.Password
 	}
