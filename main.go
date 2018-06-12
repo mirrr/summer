@@ -5,9 +5,9 @@ import (
 	"time"
 	"ttpl"
 
+	"github.com/gin-gonic/gin"
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/night-codes/types.v1"
 )
 

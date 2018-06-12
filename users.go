@@ -2,14 +2,13 @@ package summer
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/kennygrant/sanitize"
 	"github.com/night-codes/govalidator"
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"gopkg.in/night-codes/types.v1"
 	"strings"
 	"sync"
 	"time"
@@ -264,10 +263,10 @@ func (u *Users) SaveFrom(data interface{}) error {
 	}
 	prevUser, exists := u.Get(user.ID)
 	if !exists {
-		return errors.New("User not found!")
+		return errors.New("User not found")
 	}
 	if user.Login != prevUser.Login {
-		u.LogOut(user.ID, prevUser.Login)
+		u.Clear(user.ID, prevUser.Login)
 	}
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
@@ -496,7 +495,7 @@ func (u *Users) Length() int {
 	return u.count
 }
 
-// Length of users array
+// CacheLength return len of users array
 func (u *Users) CacheLength() int {
 	u.Lock()
 	defer u.Unlock()
@@ -525,7 +524,7 @@ func (u *Users) Validate(user *UsersStruct) error {
 		return errors.New(strings.Join(ers, " \n"))
 	}
 	if user.Password != user.Password2 {
-		return errors.New("Password mismatch!")
+		return errors.New("Password mismatch")
 	}
 	user.Password2 = ""
 	return nil

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 )
 

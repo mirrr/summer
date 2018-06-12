@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 )
 
