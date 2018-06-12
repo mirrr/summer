@@ -4,7 +4,7 @@ Simple control panel for [Golang](https://golang.org/) based on [Gin framework](
 
 ## How To Install   
 ```bash
-go get -u gopkg.in/night-codes/summer.v1/...
+go get -u gopkg.in/night-codes/summer.v2/...
 
 ```
 
