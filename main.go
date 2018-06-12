@@ -43,6 +43,7 @@ type (
 		Engine            *gin.Engine
 		HashDBFn          func(login, password, authSalt string) string
 		HashCookieFn      func(login, password, authSalt, ip, userAgent string) string
+		DelayStart        bool
 	}
 
 	//Panel struct
@@ -179,9 +180,11 @@ func (panel *Panel) init() {
 	})
 
 	// starting web-server
-	go func() {
-		panic(panel.Engine.Run(":" + types.String(panel.Port)))
-	}()
+	if !panel.DelayStart {
+		go func() {
+			panic(panel.Engine.Run(":" + types.String(panel.Port)))
+		}()
+	}
 }
 
 func (panel *Panel) initTpl() {
@@ -227,6 +230,12 @@ func (panel *Panel) correctPath() {
 	if len(panel.DefaultPage) == 0 || panel.DefaultPage[0] != '/' {
 		panel.DefaultPage = "/" + panel.DefaultPage
 	}
+}
+
+func (panel *Panel) Run() {
+	go func() {
+		panic(panel.Engine.Run(":" + types.String(panel.Port)))
+	}()
 }
 
 func Wait() {

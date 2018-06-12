@@ -9,6 +9,7 @@ import (
 	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"gopkg.in/night-codes/types.v1"
 	"strings"
 	"sync"
 	"time"
@@ -265,7 +266,9 @@ func (u *Users) SaveFrom(data interface{}) error {
 	if !exists {
 		return errors.New("User not found!")
 	}
-	user.Login = prevUser.Login
+	if user.Login != prevUser.Login {
+		u.LogOut(user.ID, prevUser.Login)
+	}
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
 	user.Notice = sanitize.HTML(user.Notice)
@@ -321,6 +324,25 @@ func (u *Users) loadUsers() {
 		u.rawList[user.Login] = &resultRaw[key]
 		u.rawListID[user.ID] = &resultRaw[key]
 	}
+	u.Unlock()
+}
+
+// LoadUser gets changes of user from mongoDB
+func (u *Users) LoadUser(id uint64) {
+	now := time.Now().Unix()
+	resultRaw := bson.Raw{}
+	if err := u.collection.FindId(id).One(&resultRaw); err != nil {
+		return
+	}
+
+	u.Lock()
+	user := UsersStruct{}
+	resultRaw.Unmarshal(&user)
+	user.Loaded = now
+	u.list[user.Login] = &user
+	u.listID[user.ID] = &user
+	u.rawList[user.Login] = &resultRaw
+	u.rawListID[user.ID] = &resultRaw
 	u.Unlock()
 }
 
@@ -507,6 +529,16 @@ func (u *Users) Validate(user *UsersStruct) error {
 	}
 	user.Password2 = ""
 	return nil
+}
+
+// Clear user from users cache
+func (u *Users) Clear(id uint64, login string) {
+	u.Lock()
+	delete(u.list, login)
+	delete(u.rawList, login)
+	delete(u.listID, id)
+	delete(u.rawListID, id)
+	u.Unlock()
 }
 
 func setUserDefaults(user *UsersStruct) {
