@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"github.com/night-codes/govalidator"
 	"golang.org/x/crypto/sha3"
-	"gopkg.in/gin-gonic/gin.v1"
-	"gopkg.in/gin-gonic/gin.v1/binding"
 )
 
 var (

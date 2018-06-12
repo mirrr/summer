@@ -8,7 +8,7 @@ var moduleTpl = template.Must(template.New("module.go").Parse(`package {{if .Ven
 
 import (
 	"github.com/kennygrant/sanitize"
-	"gopkg.in/gin-gonic/gin.v1"{{if .AddSearch}}
+	"github.com/gin-gonic/gin"{{if .AddSearch}}
 	"gopkg.in/mgo.v2/bson"{{end}}
 	"gopkg.in/night-codes/summer.v1"
 	"gopkg.in/night-codes/types.v1"

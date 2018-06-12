@@ -2,11 +2,11 @@ package summer
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"github.com/kennygrant/sanitize"
 	"github.com/night-codes/govalidator"
 	"github.com/night-codes/mgo-ai"
 	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/gin-gonic/gin.v1"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"strings"
@@ -263,9 +263,11 @@ func (u *Users) SaveFrom(data interface{}) error {
 	}
 	prevUser, exists := u.Get(user.ID)
 	if !exists {
-		return errors.New("User not found!")
+		return errors.New("User not found")
 	}
-	user.Login = prevUser.Login
+	if user.Login != prevUser.Login {
+		u.Clear(user.ID, prevUser.Login)
+	}
 	user.Created = prevUser.Created
 	user.Name = sanitize.HTML(user.Name)
 	user.Notice = sanitize.HTML(user.Notice)
@@ -321,6 +323,25 @@ func (u *Users) loadUsers() {
 		u.rawList[user.Login] = &resultRaw[key]
 		u.rawListID[user.ID] = &resultRaw[key]
 	}
+	u.Unlock()
+}
+
+// LoadUser gets changes of user from mongoDB
+func (u *Users) LoadUser(id uint64) {
+	now := time.Now().Unix()
+	resultRaw := bson.Raw{}
+	if err := u.collection.FindId(id).One(&resultRaw); err != nil {
+		return
+	}
+
+	u.Lock()
+	user := UsersStruct{}
+	resultRaw.Unmarshal(&user)
+	user.Loaded = now
+	u.list[user.Login] = &user
+	u.listID[user.ID] = &user
+	u.rawList[user.Login] = &resultRaw
+	u.rawListID[user.ID] = &resultRaw
 	u.Unlock()
 }
 
@@ -474,7 +495,7 @@ func (u *Users) Length() int {
 	return u.count
 }
 
-// Length of users array
+// CacheLength return len of users array
 func (u *Users) CacheLength() int {
 	u.Lock()
 	defer u.Unlock()
@@ -503,10 +524,20 @@ func (u *Users) Validate(user *UsersStruct) error {
 		return errors.New(strings.Join(ers, " \n"))
 	}
 	if user.Password != user.Password2 {
-		return errors.New("Password mismatch!")
+		return errors.New("Password mismatch")
 	}
 	user.Password2 = ""
 	return nil
+}
+
+// Clear user from users cache
+func (u *Users) Clear(id uint64, login string) {
+	u.Lock()
+	delete(u.list, login)
+	delete(u.rawList, login)
+	delete(u.listID, id)
+	delete(u.rawListID, id)
+	u.Unlock()
 }
 
 func setUserDefaults(user *UsersStruct) {
