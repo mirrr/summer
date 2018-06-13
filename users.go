@@ -92,6 +92,8 @@ func UsersFarm(DBName, UsersCollection, AuthSalt string, AICollection ...string)
 			DBName:          DBName,
 			UsersCollection: UsersCollection,
 			AICollection:    AIColl,
+			HashDBFn:        func(login, password, authSalt string) string { return H3hash(password + authSalt) },
+			HashCookieFn:    func(login, dbpass, authSalt, ip, userAgent string) string { return H3hash(ip + dbpass + authSalt) },
 		},
 		Users: new(Users),
 		AI:    *ai.Create(mongo.DB(DBName).C(AIColl)),
