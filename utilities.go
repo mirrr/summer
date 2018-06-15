@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -128,7 +129,7 @@ func dummy(c *gin.Context) {
 func setCookie(c *gin.Context, name string, value string) {
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:    name,
-		Value:   value,
+		Value:   url.QueryEscape(value),
 		Path:    "/",
 		MaxAge:  32000000,
 		Expires: time.Now().AddDate(1, 0, 0),
