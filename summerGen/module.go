@@ -3,11 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/urfave/cli"
-	"gopkg.in/night-codes/types.v1"
 	"io/ioutil"
 	"regexp"
 	"strings"
+
+	"github.com/urfave/cli"
+	"gopkg.in/night-codes/types.v1"
 )
 
 func moduleAction(c *cli.Context) error {
@@ -52,7 +53,7 @@ func modAction(path string, s obj) error {
 	}
 
 	if !strings.Contains(main, "gopkg.in/night-codes/summer.v1") || !strings.Contains(main, "summer.Create(") {
-		return errors.New("Current directory is not Summer project!")
+		return errors.New("Current directory is not Summer project")
 	}
 
 	o := 1
@@ -75,11 +76,11 @@ func modAction(path string, s obj) error {
 			}
 			continue
 		}
-		return errors.New("Unsupported main.go!")
+		return errors.New("Unsupported main.go")
 	}
 	sett := main[cr0 : cr-1]
 
-	fmt.Println("SummerGen generates ", s["name"], "module...\n")
+	fmt.Println("SummerGen generates ", s["name"], "module...\n ")
 	viewsPath := "templates/main"
 	viewsDotPath := "templates/dpT.js"
 	vendor := types.Bool(s["Vendor"])
@@ -94,7 +95,7 @@ func modAction(path string, s obj) error {
 
 		cr01 := regexp.MustCompile("import\\s*\\({1}").FindAllStringSubmatchIndex(main, -1)
 		if len(cr01) < 1 || len(cr01[0]) < 2 {
-			return errors.New("Unsupported main.go!")
+			return errors.New("Unsupported main.go")
 		}
 		cr1 := cr01[0][1]
 		app = path + "vendor/" + fullName + "/" + fullName + ".go"

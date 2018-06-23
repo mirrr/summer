@@ -31,25 +31,16 @@ func (a *auth) Auth(g *gin.RouterGroup, disableAuth bool) {
 	if !a.DisableAuth {
 		middle := a.Login(g.BasePath(), disableAuth)
 		g.Use(middle)
-	} else {
-		g.Use(func(c *gin.Context) {
-			user := a.Users.GetDummyUser()
-			user.Rights = Rights{
-				Groups: []string{"root"},
-			}
-			c.Set("user", *user)
-			c.Set("login", "")
-			c.Next()
-		})
-	}
-	if !a.DisableAuth && !a.added {
-		a.RouterGroup.GET("/logout", a.Logout(a.RouterGroup.BasePath()))
-		middle := a.Login(g.BasePath(), false)
-		authGroup := a.RouterGroup.Group("/summer-auth")
-		authGroup.Use(middle)
-		authGroup.POST("/login", dummy)
-		authGroup.POST("/register", dummy)
-		a.added = true
+
+		if !a.added {
+			a.RouterGroup.GET("/logout", a.Logout(a.RouterGroup.BasePath()))
+			middle := a.Login(g.BasePath(), false)
+			authGroup := a.RouterGroup.Group("/summer-auth")
+			authGroup.Use(middle)
+			authGroup.POST("/login", dummy)
+			authGroup.POST("/register", dummy)
+			a.added = true
+		}
 	}
 }
 
@@ -113,9 +104,8 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 				c.HTML(200, "firstStart.html", gin.H{"panelPath": panelPath})
 				c.Abort()
 				return
-			} else {
-				FS()
 			}
+			FS()
 		}
 
 		// авторизация пользователя админки
@@ -140,33 +130,34 @@ func (a *auth) Login(panelPath string, disableAuth bool) gin.HandlerFunc {
 			}
 			c.Abort()
 			return
-		} else {
-			login, e1 := c.Cookie(a.AuthPrefix + "login")
-			hash, e2 := c.Cookie(a.AuthPrefix + "hash")
-			if e1 == nil && e2 == nil {
-				if user, exists := a.Users.GetByLogin(login); exists && hash == a.HashCookieFn(login, user.Password, a.AuthSalt, cliIP, userAgent) {
-					if !user.Disabled && !user.Deleted {
-						if user.Root {
-							user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
-						}
-
-						c.Set("user", *user)
-						c.Set("login", user.Login)
-						c.Next()
-						return
-					} else {
-						a.Logout(a.RouterGroup.BasePath())(c)
-						return
+		}
+		login, err1 := c.Cookie(a.AuthPrefix + "login")
+		hash, err2 := c.Cookie(a.AuthPrefix + "hash")
+		if err1 == nil && err2 == nil {
+			if user, exists := a.Users.GetByLogin(login); exists && hash == a.HashCookieFn(login, user.Password, a.AuthSalt, cliIP, userAgent) {
+				if !user.Disabled && !user.Deleted {
+					if user.Root {
+						user.Rights.Groups = uniqAppend(user.Rights.Groups, []string{"root"})
 					}
+
+					c.Set("user", *user)
+					c.Set("userID", user.ID)
+					c.Set("login", user.Login)
+					c.Next()
+					return
 				}
-			}
-			if disableAuth {
-				user := a.Users.GetDummyUser()
-				c.Set("user", *user)
-				c.Set("login", "")
-				c.Next()
+				a.Logout(a.RouterGroup.BasePath())(c)
 				return
+
 			}
+		}
+		if disableAuth {
+			user := a.Users.GetDummyUser()
+			c.Set("user", *user)
+			c.Set("userID", 0)
+			c.Set("login", "")
+			c.Next()
+			return
 		}
 
 		if strings.Contains(c.Request.Header.Get("Upgrade"), "websocket") ||

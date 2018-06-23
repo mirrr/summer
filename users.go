@@ -2,6 +2,10 @@ package summer
 
 import (
 	"errors"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/kennygrant/sanitize"
 	"github.com/night-codes/govalidator"
@@ -9,12 +13,10 @@ import (
 	"github.com/night-codes/mgo-wrapper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
-	"strings"
-	"sync"
-	"time"
 )
 
 type (
+	// UsersStruct data struct
 	UsersStruct struct {
 		ID     uint64 `form:"id" json:"id" bson:"_id"`
 		Login  string `form:"login" json:"login" bson:"login" valid:"required,min(3)"`
@@ -59,6 +61,8 @@ type (
 		// user without authentication
 		Demo bool `form:"-" json:"demo" bson:"-"`
 	}
+
+	// Users struct
 	Users struct {
 		rawList    map[string]*bson.Raw    // key - login
 		rawListID  map[uint64]*bson.Raw    // key - id
@@ -72,6 +76,7 @@ type (
 	}
 )
 
+// UsersFarm makes new Users instanse
 func UsersFarm(DBName, UsersCollection, AuthSalt string, AICollection ...string) *Users {
 	AIColl := "ai"
 	if len(AICollection) > 0 && len(AICollection[0]) > 0 {
@@ -127,7 +132,7 @@ func (u *Users) Add(user UsersStruct) error {
 		return err
 	}
 	if len(user.Password) == 0 {
-		return errors.New("Password to short!")
+		return errors.New("Password too short")
 	}
 	user.ID = u.AI.Next(u.Panel.UsersCollection)
 	user.Name = sanitize.HTML(user.Name)
@@ -151,32 +156,31 @@ func (u *Users) Add(user UsersStruct) error {
 		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
 		return nil
-	} else {
-		if mgo.IsDup(err) {
-			return errors.New("User already exists!")
-		}
-		return errors.New("DB Error")
 	}
+	if mgo.IsDup(err) {
+		return errors.New("User already exists")
+	}
+	return errors.New("DB Error")
 }
 
-// Add new user from struct
-func (u *Users) AddFrom(data interface{}) (error, uint64) {
+// AddFrom adds new user from struct
+func (u *Users) AddFrom(data interface{}) (uint64, error) {
 	msh, err := bson.Marshal(data)
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 	rawUser := bson.Raw{Kind: 3, Data: msh}
 
 	user := &UsersStruct{}
 	if err := rawUser.Unmarshal(&user); err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	if err := u.Validate(user); err != nil {
-		return err, 0
+		return 0, err
 	}
 	if len(user.Password) == 0 {
-		return errors.New("Password to short!"), 0
+		return 0, errors.New("Password too short")
 	}
 	user.ID = u.AI.Next(u.Panel.UsersCollection)
 	user.Name = sanitize.HTML(user.Name)
@@ -196,13 +200,12 @@ func (u *Users) AddFrom(data interface{}) (error, uint64) {
 	errIns := u.collection.Insert(insert)
 	if err := u.collection.UpdateId(user.ID, obj{"$set": user}); err == nil && errIns == nil {
 		u.Get(user.ID)
-		return nil, user.ID
-	} else {
-		if mgo.IsDup(errIns) {
-			return errors.New("User already exists!"), 0
-		}
-		return errors.New("DB Error"), 0
+		return user.ID, nil
 	}
+	if mgo.IsDup(errIns) {
+		return 0, errors.New("User already exists")
+	}
+	return 0, errors.New("DB Error")
 }
 
 // Save exists user
@@ -212,7 +215,7 @@ func (u *Users) Save(user *UsersStruct) error {
 	}
 	prevUser, exists := u.Get(user.ID)
 	if !exists {
-		return errors.New("User not found!")
+		return errors.New("User not found")
 	}
 	user.Login = prevUser.Login
 	user.Created = prevUser.Created
@@ -241,12 +244,11 @@ func (u *Users) Save(user *UsersStruct) error {
 		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
 		return nil
-	} else {
-		return errors.New("DB Error")
 	}
+	return errors.New("DB Error")
 }
 
-// Save exists user from own struct
+// SaveFrom saves exists user from own struct
 func (u *Users) SaveFrom(data interface{}) error {
 	msh, err := bson.Marshal(data)
 	if err != nil {
@@ -291,9 +293,8 @@ func (u *Users) SaveFrom(data interface{}) error {
 		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
 		return nil
-	} else {
-		return errors.New("DB Error")
 	}
+	return errors.New("DB Error")
 }
 
 // get changed users from mongoDB
@@ -316,7 +317,7 @@ func (u *Users) loadUsers() {
 	u.collection.Find(request).All(&resultRaw)
 
 	u.Lock()
-	for key, _ := range resultRaw {
+	for key := range resultRaw {
 		user := UsersStruct{}
 		resultRaw[key].Unmarshal(&user)
 		user.Loaded = now
@@ -392,7 +393,7 @@ func (u *Users) GetByLogin(login string) (user *UsersStruct, exists bool) {
 	return
 }
 
-// FetchByLogin returns user data by login
+// GetByLoginTo returns user data by login
 func (u *Users) GetByLoginTo(login string, user interface{}) (exists bool) {
 	rawUser := &bson.Raw{}
 	u.Lock() // Lock 1
@@ -454,7 +455,7 @@ func (u *Users) Get(id uint64) (user *UsersStruct, exists bool) {
 	return
 }
 
-// Fetch returns user data by login
+// GetTo returns user data by login
 func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
 	rawUser := &bson.Raw{}
 	u.Lock() // Lock 1
@@ -485,10 +486,14 @@ func (u *Users) GetTo(id uint64, user interface{}) (exists bool) {
 	return
 }
 
+// GetFromContextTo returns user from context
 func (u *Users) GetFromContextTo(c *gin.Context, user interface{}) (exists bool) {
 	u.mutUsers.Lock()
-	defer u.mutUsers.Unlock()
-	exists = u.GetTo((c.MustGet("user").(UsersStruct)).ID, user)
+	val, ok := c.Get("user")
+	u.mutUsers.Unlock()
+	if ok {
+		exists = u.GetTo(val.(UsersStruct).ID, user)
+	}
 	return
 }
 
@@ -504,6 +509,7 @@ func (u *Users) CacheLength() int {
 	return len(u.list)
 }
 
+// GetDummyUser returns empty user
 func (u *Users) GetDummyUser() *UsersStruct {
 	return &UsersStruct{
 		Name:  "",
@@ -517,6 +523,7 @@ func (u *Users) GetDummyUser() *UsersStruct {
 	}
 }
 
+// Validate user data
 func (u *Users) Validate(user *UsersStruct) error {
 	if _, err := govalidator.ValidateStruct(user); err != nil {
 		ers := []string{}

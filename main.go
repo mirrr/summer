@@ -135,7 +135,7 @@ func (panel *Panel) AddPage(name string, title string, menu *Menu, originTemplat
 	return panel.AddModule(settings, &Module{})
 }
 
-// AddPage provide adding simple page without authorization
+// AddOpenPage provide adding simple page without authorization
 func (panel *Panel) AddOpenPage(name string, title string, menu *Menu, originTemplate ...bool) Simple {
 	settings := &ModuleSettings{
 		Name:        name,
@@ -232,12 +232,14 @@ func (panel *Panel) correctPath() {
 	}
 }
 
+// Run delayed application
 func (panel *Panel) Run() {
 	go func() {
 		panic(panel.Engine.Run(":" + types.String(panel.Port)))
 	}()
 }
 
+// Wait locks go-routine
 func Wait() {
 	select {}
 }

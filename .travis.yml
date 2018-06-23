@@ -1,0 +1,22 @@
+language: go
+sudo: false
+go:
+  - 1.7.x
+  - 1.8.x
+  - 1.9.x
+  - 1.10.x
+  - master
+
+git:
+  depth: 10
+
+go_import_path: gopkg.in/night-codes/summer.v2
+
+install:
+  - go get golang.org/x/tools/cmd/cover
+  - go list -f '{{range .Imports}}{{.}} {{end}}' ./... | xargs go get -v
+
+script:
+  - go vet
+  - go test -v ./... -cover
+  - go build

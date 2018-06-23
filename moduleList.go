@@ -40,7 +40,7 @@ func (m *ModuleList) GetList() map[string]Simple {
 	defer m.Unlock()
 
 	ret := map[string]Simple{}
-	for name, _ := range m.list {
+	for name := range m.list {
 		ret[name] = m.list[name]
 	}
 	return ret

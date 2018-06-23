@@ -1,13 +1,15 @@
 package summer
 
 import (
-	"github.com/night-codes/mgo-wrapper"
-	"gopkg.in/mgo.v2"
 	"sync"
 	"time"
+
+	"github.com/night-codes/mgo-wrapper"
+	"gopkg.in/mgo.v2"
 )
 
 type (
+	// NotifyStruct data struct
 	NotifyStruct struct {
 		ID      uint64 `json:"id"  bson:"_id"`
 		UserID  uint64 `json:"userId"  bson:"userId"`
@@ -45,17 +47,17 @@ func (n *notify) Add(ntf NotifyStruct) error {
 	ntf.Created = uint(time.Now().Unix() / 60)
 	ntf.Updated = ntf.Created
 
-	if err := n.collection.Insert(ntf); err == nil {
-		n.Lock()
-		defer n.Unlock()
-		if len(n.list) == 0 {
-			n.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
-		}
-		n.list[ntf.ID] = &ntf
-		return nil
-	} else {
+	if err := n.collection.Insert(ntf); err != nil {
 		return err
 	}
+
+	n.Lock()
+	defer n.Unlock()
+	if len(n.list) == 0 {
+		n.collection.EnsureIndex(mgo.Index{Key: []string{"login"}, Unique: true})
+	}
+	n.list[ntf.ID] = &ntf
+	return nil
 }
 
 // get array of notify
