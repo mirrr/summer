@@ -156,11 +156,12 @@ func (u *Users) Add(user UsersStruct) error {
 		u.rawListID[user.ID] = &rawUser
 		u.Unlock()
 		return nil
+	} else {
+		if mgo.IsDup(err) {
+			return errors.New("User already exists")
+		}
+		return errors.New("DB Error")
 	}
-	if mgo.IsDup(err) {
-		return errors.New("User already exists")
-	}
-	return errors.New("DB Error")
 }
 
 // AddFrom adds new user from struct
