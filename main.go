@@ -203,6 +203,9 @@ func (panel *Panel) initTpl() {
 	panel.TFuncMap["var"] = func(key string) interface{} {
 		return panel.Vars[key]
 	}
+	panel.TFuncMap["translate"] = func(group, key, lang string) interface{} {
+		return panel.Vars[key]
+	}
 
 	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/", panel.Views + "/"}, panel.ViewsDoT, panel.TFuncMap)
 }

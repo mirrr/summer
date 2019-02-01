@@ -16,18 +16,24 @@ import (
 	"github.com/gin-gonic/gin/render"
 )
 
-// PageTemplate struct for gin
-type PageTemplate struct {
-	TemplatePath string
-	templates    *template.Template
-}
+type (
+	translateFn func(key, value, lang string) interface{}
 
-// PageRender struct for gin
-type PageRender struct {
-	Template *template.Template
-	Data     interface{}
-	Name     string
-}
+	// PageTemplate struct for gin
+	PageTemplate struct {
+		TemplatePath string
+		templates    *template.Template
+		funcMap      template.FuncMap
+	}
+
+	// PageRender struct for gin
+	PageRender struct {
+		Template *template.Template
+		funcMap  template.FuncMap
+		Data     interface{}
+		Name     string
+	}
+)
 
 var (
 	dmu      sync.Mutex
@@ -45,10 +51,10 @@ var (
 		"js":     true,
 		"css":    true,
 		"lang":   true,
-		"par_0":  true,
-		"par_1":  true,
-		"par_2":  true,
-		"par_3":  true,
+		"par_0":  false,
+		"par_1":  false,
+		"par_2":  false,
+		"par_3":  false,
 	}
 )
 
@@ -69,6 +75,7 @@ func init() {
 func (r PageTemplate) Instance(name string, data interface{}) render.Render {
 	return PageRender{
 		Template: r.templates,
+		funcMap:  r.funcMap,
 		Name:     name,
 		Data:     data,
 	}
@@ -100,12 +107,25 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 		}
 		delete(header, Key)
 	}
-	r.Template.Funcs(template.FuncMap{"site": func(name string) interface{} { return site[name] }})
+	r.Template.Funcs(template.FuncMap{
+		"site": func(name string) interface{} { return site[name] },
+		"o": func(group, key string) interface{} {
+			if lang, ok := site["lang"]; ok {
+				if translate, ok1 := r.funcMap["translate"]; ok1 {
+					if tr2, ok2 := translate.(translateFn); ok2 {
+						return tr2(group, key, lang.(string))
+					}
+				}
+			}
+			return ""
+		},
+	})
 
 	name := r.Name
 	if name != "login.html" && name != "firstStart.html" && site["allow"] != "true" {
 		name = "access-deny"
 	}
+
 	if len(name) > 0 {
 		if err := r.Template.ExecuteTemplate(w, name, r.Data); err != nil {
 			fmt.Println("Template err: ", err.Error())
@@ -169,7 +189,7 @@ func Use(r *gin.Engine, pathes []string, dotPath string, funcMap ...template.Fun
 		}
 	}
 
-	r.HTMLRender = PageTemplate{"/", t}
+	r.HTMLRender = PageTemplate{"/", t, funcMap[0]}
 }
 
 // parseFiles is the helper for the method and function. If the argument
