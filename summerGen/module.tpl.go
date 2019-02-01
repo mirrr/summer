@@ -10,7 +10,7 @@ import (
 	"github.com/kennygrant/sanitize"
 	"github.com/gin-gonic/gin"{{if .AddSearch}}
 	"gopkg.in/mgo.v2/bson"{{end}}
-	"gopkg.in/night-codes/summer.v1"
+	"gopkg.in/night-codes/summer.v2"
 	"gopkg.in/night-codes/types.v1"
 	"time"
 )

@@ -52,7 +52,7 @@ func modAction(path string, s obj) error {
 		main = string(mainBytes)
 	}
 
-	if !strings.Contains(main, "gopkg.in/night-codes/summer.v1") || !strings.Contains(main, "summer.Create(") {
+	if !strings.Contains(main, "gopkg.in/night-codes/summer.v2") || !strings.Contains(main, "summer.Create(") {
 		return errors.New("Current directory is not Summer project")
 	}
 

@@ -8,7 +8,7 @@ var helloTpl = template.Must(template.New("hello.go").Parse(`
 package {{if .Vendor}}hello{{else}}main{{end}}
 
 import (
-	"gopkg.in/night-codes/summer.v1"
+	"gopkg.in/night-codes/summer.v2"
 )
 
 {{if .Vendor}}
@@ -48,9 +48,9 @@ func init() {
 {{define "howto.html"}}
 <h3>Getting started</h3>
 <p>To get the package, execute:<span class="fa fa-pagelines" style="font-size: 14rem;color: #e5eff9;float: right;display: inline-block;"></span></p>
-<p><div style="padding: 1em 0.6em; display: inline-block; min-width: 20rem; background: #e0e9f6;" class="clickselect" >go get gopkg.in/night-codes/summer.v1</div></p>
+<p><div style="padding: 1em 0.6em; display: inline-block; min-width: 20rem; background: #e0e9f6;" class="clickselect" >go get gopkg.in/night-codes/summer.v2</div></p>
 <p>To import this package, add the following line to your code:</p>
-<p><div style="padding: 1em 0.6em; display: inline-block; min-width: 20rem; background: #e0e9f6;" class="clickselect" >import "gopkg.in/night-codes/summer.v1"</div></p>
+<p><div style="padding: 1em 0.6em; display: inline-block; min-width: 20rem; background: #e0e9f6;" class="clickselect" >import "gopkg.in/night-codes/summer.v2"</div></p>
 <p>For more details, see the <a href="https://godoc.org/github.com/night-codes/summer" target="_blank">API documentation.</a></p>
 {{end}}
 `))

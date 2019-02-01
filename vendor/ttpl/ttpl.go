@@ -2,8 +2,6 @@ package ttpl
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/render"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -13,6 +11,9 @@ import (
 	"sync"
 	"text/template"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/render"
 )
 
 // PageTemplate struct for gin
@@ -43,6 +44,11 @@ var (
 		"allow":  false,
 		"js":     true,
 		"css":    true,
+		"lang":   true,
+		"par_0":  true,
+		"par_1":  true,
+		"par_2":  true,
+		"par_3":  true,
 	}
 )
 

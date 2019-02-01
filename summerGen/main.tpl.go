@@ -9,7 +9,7 @@ var mainTpl = template.Must(template.New("main.go").Parse(`package main
 import (
 	{{if .Vendor}}"hello"{{end}}
 	"fmt"
-	"gopkg.in/night-codes/summer.v1"
+	"gopkg.in/night-codes/summer.v2"
 )
 
 type (
