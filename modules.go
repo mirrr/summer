@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/night-codes/mgo-wrapper"
+	mongo "github.com/night-codes/mgo-wrapper"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/night-codes/types.v1"
 )
@@ -215,6 +215,7 @@ func createModule(panel *Panel, settings *ModuleSettings, s Simple) Simple {
 		login, _ := c.Get("login")
 		c.Header("Module", settings.PageRouteName)
 		c.Header("Login", types.String(login))
+		c.Header("Lang", getLang(c.GetHeader("Accept-Language")))
 		c.Header("Title", settings.Title)
 		c.Header("Path", panel.Path)
 		c.Header("Ajax", settings.AjaxRouteName)

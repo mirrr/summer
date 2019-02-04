@@ -6,8 +6,8 @@ import (
 	"ttpl"
 
 	"github.com/gin-gonic/gin"
-	"github.com/night-codes/mgo-ai"
-	"github.com/night-codes/mgo-wrapper"
+	ai "github.com/night-codes/mgo-ai"
+	mongo "github.com/night-codes/mgo-wrapper"
 	"gopkg.in/night-codes/types.v1"
 )
 
@@ -203,8 +203,8 @@ func (panel *Panel) initTpl() {
 	panel.TFuncMap["var"] = func(key string) interface{} {
 		return panel.Vars[key]
 	}
-	panel.TFuncMap["translate"] = func(group, key, lang string) interface{} {
-		return panel.Vars[key]
+	panel.TFuncMap["o"] = func(key string) interface{} {
+		return ""
 	}
 
 	ttpl.Use(panel.Engine, []string{PackagePath() + "/templates/main/", panel.Views + "/"}, panel.ViewsDoT, panel.TFuncMap)
