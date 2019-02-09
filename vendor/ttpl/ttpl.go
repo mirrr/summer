@@ -48,7 +48,7 @@ var (
 		"allow":  false,
 		"js":     true,
 		"css":    true,
-		"lang":   true,
+		"lang":   false,
 		"par_0":  false,
 		"par_1":  false,
 		"par_2":  false,
@@ -108,10 +108,10 @@ func (r PageRender) Render(w http.ResponseWriter) error {
 	r.Template.Funcs(template.FuncMap{
 		"site": func(name string) interface{} { return site[name] },
 		"o": func(key string) interface{} {
-			if lang, ok := site["lang"]; ok && len(site["lang"].([]string)) > 0 {
+			if lang, ok := site["lang"]; ok {
 				if translate, ok1 := r.funcMap["translate"]; ok1 {
 					if translate2, ok2 := translate.(func(module, key, lang string) string); ok2 {
-						return translate2(site["module"].(string), key, lang.([]string)[0])
+						return translate2(site["module"].(string), key, lang.(string))
 					}
 				}
 			}
